@@ -202,6 +202,11 @@ body {
   opacity: 0.5;
   cursor: default;
 }
+.btn-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
@@ -223,6 +228,7 @@ body {
 .panel-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   margin-bottom: 8px;
 }
 

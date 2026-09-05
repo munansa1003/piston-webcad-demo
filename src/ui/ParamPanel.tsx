@@ -18,6 +18,8 @@ export interface ParamPanelProps {
   onNumberChange: (key: NumericParamKey, value: number) => void;
   onBooleanChange: (key: BooleanParamKey, value: boolean) => void;
   onReset: () => void;
+  onCopyLink: () => void;
+  copied: boolean;
   isDefault: boolean;
 }
 
@@ -69,7 +71,7 @@ function NumberField({ spec, value, onCommit }: { spec: NumericParamSpec; value:
   );
 }
 
-export default function ParamPanel({ params, warnings, onNumberChange, onBooleanChange, onReset, isDefault }: ParamPanelProps) {
+export default function ParamPanel({ params, warnings, onNumberChange, onBooleanChange, onReset, onCopyLink, copied, isDefault }: ParamPanelProps) {
   return (
     <div className="param-panel">
       {warnings.length > 0 && (
@@ -80,6 +82,9 @@ export default function ParamPanel({ params, warnings, onNumberChange, onBoolean
         </ul>
       )}
       <div className="panel-actions">
+        <button className="btn" type="button" onClick={onCopyLink} data-testid="copy-link">
+          {copied ? "복사됨 ✓" : "링크 복사"}
+        </button>
         <button className="btn" type="button" onClick={onReset} disabled={isDefault} data-testid="reset">
           초기값 복원
         </button>

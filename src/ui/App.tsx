@@ -11,55 +11,68 @@ import {
   type NumericParamKey,
   type PistonParams,
 } from "../cad/params";
+import { paramsToQuery, queryToParams } from "../cad/urlState";
 import type { GenerateResult } from "../worker/api";
 import { downloadBlob } from "./download";
 
 type KernelState = { kind: "loading" } | { kind: "ready"; loadMs: number } | { kind: "error"; message: string };
 type GenState = { kind: "idle" } | { kind: "generating" } | { kind: "error"; message: string };
 
+interface GenRequest {
+  params: PistonParams;
+  cutaway: boolean;
+}
+
 const DEBOUNCE_MS = 300;
 
-/** 형상에 영향을 주는 파라미터만 (density 는 질량 계산에만 쓰이므로 재생성 불필요) */
-function geometryKey(p: PistonParams): string {
-  const { density: _density, ...rest } = p;
-  return JSON.stringify(rest);
+/** 형상에 영향을 주는 파라미터만 (density 는 질량 계산에만 쓰이므로 재생성 불필요) + 절개 보기 여부 */
+function requestKey(req: GenRequest): string {
+  const { density: _density, ...rest } = req.params;
+  return JSON.stringify(rest) + (req.cutaway ? "#cutaway" : "");
 }
 
 function isDefaultParams(p: PistonParams): boolean {
   return (Object.keys(DEFAULT_PARAMS) as (keyof PistonParams)[]).every((k) => p[k] === DEFAULT_PARAMS[k]);
 }
 
+function initialParams(): PistonParams {
+  if (typeof window === "undefined") return { ...DEFAULT_PARAMS };
+  return queryToParams(window.location.search);
+}
+
 export default function App() {
   const [kernel, setKernel] = useState<KernelState>({ kind: "loading" });
   const [gen, setGen] = useState<GenState>({ kind: "generating" });
-  const [params, setParams] = useState<PistonParams>({ ...DEFAULT_PARAMS });
+  const [params, setParams] = useState<PistonParams>(initialParams);
+  const [cutaway, setCutaway] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
-  /** result 가 만들어진 파라미터 (마지막 성공본) */
+  /** result 가 만들어진 요청 키 (마지막 성공본) */
   const [resultKey, setResultKey] = useState<string>("");
   const [frameRequest, setFrameRequest] = useState(0);
   const [exporting, setExporting] = useState<"step" | "stl" | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   const busyRef = useRef(false);
-  const pendingRef = useRef<PistonParams | null>(null);
-  const latestParamsRef = useRef(params);
-  latestParamsRef.current = params;
+  const pendingRef = useRef<GenRequest | null>(null);
+  const latestRef = useRef<GenRequest>({ params, cutaway });
+  latestRef.current = { params, cutaway };
 
   const warnings = useMemo(() => checkRules(params), [params]);
 
-  /** 한 번에 하나만 생성. 진행 중이면 최신 파라미터만 대기열에 남긴다. */
-  const runGenerate = useCallback(async (p: PistonParams) => {
+  /** 한 번에 하나만 생성. 진행 중이면 최신 요청만 대기열에 남긴다. */
+  const runGenerate = useCallback(async (req: GenRequest) => {
     if (busyRef.current) {
-      pendingRef.current = p;
+      pendingRef.current = req;
       return;
     }
     busyRef.current = true;
     setGen({ kind: "generating" });
     let ok = false;
     try {
-      const r = await getCadWorker().generate(p);
+      const r = await getCadWorker().generate(req.params, { cutaway: req.cutaway });
       setResult(r);
-      setResultKey(geometryKey(p));
+      setResultKey(requestKey(req));
       ok = true;
     } catch (err) {
       // 실패해도 마지막 성공 모델(result)은 유지
@@ -68,8 +81,8 @@ export default function App() {
       busyRef.current = false;
       const next = pendingRef.current;
       pendingRef.current = null;
-      if (next && (!ok || geometryKey(next) !== geometryKey(p))) {
-        // 대기 중인 최신 파라미터로 곧바로 이어서 생성 ("준비됨" 으로 바꾸지 않음)
+      if (next && (!ok || requestKey(next) !== requestKey(req))) {
+        // 대기 중인 최신 요청으로 곧바로 이어서 생성 ("준비됨" 으로 바꾸지 않음)
         void runGenerate(next);
       } else if (ok) {
         setGen({ kind: "idle" });
@@ -77,7 +90,7 @@ export default function App() {
     }
   }, []);
 
-  // 커널 로드 (1회) → 기본값 생성
+  // 커널 로드 (1회)
   useEffect(() => {
     let cancelled = false;
     getCadWorker()
@@ -94,18 +107,27 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [runGenerate]);
+  }, []);
 
-  // 파라미터 변경 → 300ms 디바운스 후 자동 재생성 (형상 파라미터가 바뀐 경우만). 첫 생성은 지연 없이.
-  const paramsKey = geometryKey(params);
+  // 파라미터/절개 변경 → 300ms 디바운스 후 자동 재생성 (형상에 영향 있는 경우만). 첫 생성은 지연 없이.
+  const currentKey = requestKey({ params, cutaway });
   useEffect(() => {
     if (kernel.kind !== "ready") return;
-    if (paramsKey === resultKey && gen.kind !== "error") return;
+    if (currentKey === resultKey && gen.kind !== "error") return;
     const delay = resultKey === "" ? 0 : DEBOUNCE_MS;
-    const id = window.setTimeout(() => void runGenerate(latestParamsRef.current), delay);
+    const id = window.setTimeout(() => void runGenerate(latestRef.current), delay);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, kernel.kind, runGenerate]);
+  }, [currentKey, kernel.kind, runGenerate]);
+
+  // 파라미터 → URL 쿼리스트링 (기본값과 다른 값만). 링크로 공유 가능.
+  useEffect(() => {
+    const q = paramsToQuery(params);
+    const url = `${window.location.pathname}${q ? `?${q}` : ""}${window.location.hash}`;
+    if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.replaceState(null, "", url);
+    }
+  }, [params]);
 
   const onNumberChange = useCallback((key: NumericParamKey, value: number) => {
     setParams((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
@@ -115,12 +137,22 @@ export default function App() {
   }, []);
   const onReset = useCallback(() => setParams({ ...DEFAULT_PARAMS }), []);
 
+  const onCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("링크를 복사하세요:", window.location.href);
+    }
+  }, []);
+
   const exportFile = useCallback(async (kind: "step" | "stl") => {
     setExporting(kind);
     try {
       const worker = getCadWorker();
       const blob = kind === "step" ? await worker.exportSTEP() : await worker.exportSTL();
-      downloadBlob(blob, exportFileName(latestParamsRef.current, kind));
+      downloadBlob(blob, exportFileName(latestRef.current.params, kind));
     } catch (err) {
       setGen({ kind: "error", message: `내보내기 실패: ${err instanceof Error ? err.message : String(err)}` });
     } finally {
@@ -128,7 +160,7 @@ export default function App() {
     }
   }, []);
 
-  const stale = result !== null && paramsKey !== resultKey;
+  const stale = result !== null && currentKey !== resultKey;
 
   return (
     <div className="app">
@@ -155,6 +187,15 @@ export default function App() {
           <div className="viewer-tools">
             <button className="btn" type="button" onClick={() => setFrameRequest((n) => n + 1)}>
               뷰 맞춤
+            </button>
+            <button
+              className={`btn${cutaway ? " btn-active" : ""}`}
+              type="button"
+              aria-pressed={cutaway}
+              onClick={() => setCutaway((c) => !c)}
+              data-testid="cutaway"
+            >
+              1/4 절개 {cutaway ? "켜짐" : "꺼짐"}
             </button>
           </div>
           {kernel.kind === "loading" && <div className="overlay">커널(wasm) 로딩 중… (약 23 MB)</div>}
@@ -187,6 +228,8 @@ export default function App() {
               onNumberChange={onNumberChange}
               onBooleanChange={onBooleanChange}
               onReset={onReset}
+              onCopyLink={() => void onCopyLink()}
+              copied={copied}
               isDefault={isDefaultParams(params)}
             />
           </div>
