@@ -1,78 +1,194 @@
 :root {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
   color-scheme: light dark;
   --bg: #f4f6f8;
   --fg: #1a2027;
+  --muted: #5b6672;
   --panel: #ffffff;
   --border: #d5dbe1;
   --accent: #2563eb;
+  --accent-fg: #ffffff;
   --ok: #15803d;
   --warn: #b91c1c;
+  --warn-bg: #fef2f2;
+  --viewer-top: #e9eef3;
+  --viewer-bottom: #cfd8e0;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #14181d;
     --fg: #e6ebf0;
+    --muted: #9aa5b1;
     --panel: #1d232a;
     --border: #364049;
-    --accent: #60a5fa;
+    --accent: #3b82f6;
+    --accent-fg: #ffffff;
     --ok: #4ade80;
     --warn: #f87171;
+    --warn-bg: #2a1a1a;
+    --viewer-top: #232a32;
+    --viewer-bottom: #11161b;
   }
 }
 * {
   box-sizing: border-box;
 }
+html,
+body,
+#root {
+  height: 100%;
+}
 body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
+  font-size: 14px;
 }
+
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
 }
 .app-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: 8px 12px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--panel);
+  flex: 0 0 auto;
 }
 .app-header h1 {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   margin: 0;
 }
+.status {
+  min-width: 0;
+}
 .badge {
-  font-size: 0.85rem;
-  padding: 2px 8px;
+  display: inline-block;
+  font-size: 0.82rem;
+  padding: 2px 9px;
   border-radius: 999px;
   border: 1px solid var(--border);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 .badge-ok {
   color: var(--ok);
 }
+.badge-busy {
+  color: var(--accent);
+}
 .badge-error {
   color: var(--warn);
+  border-color: var(--warn);
+}
+
+/* 데스크톱: 뷰어 왼쪽 + 패널 오른쪽 */
+.layout {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .viewer {
   position: relative;
-  height: 60vh;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 320px;
-  background: linear-gradient(180deg, #e9eef3, #cfd8e0);
-}
-@media (prefers-color-scheme: dark) {
-  .viewer {
-    background: linear-gradient(180deg, #232a32, #11161b);
-  }
+  background: linear-gradient(180deg, var(--viewer-top), var(--viewer-bottom));
 }
 .viewer-canvas {
   width: 100%;
   height: 100%;
   touch-action: none;
 }
+.viewer-tools {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.panel {
+  flex: 0 0 380px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  min-height: 0;
+}
+.panel-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  text-align: left;
+}
+.panel-body {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 10px 14px 24px;
+}
+
+.readout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin: 0 0 10px;
+  font-variant-numeric: tabular-nums;
+}
+.readout-grid > div {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.readout-grid dt {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.readout-grid dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+.readout-stale .readout-grid dd {
+  opacity: 0.55;
+}
+.export-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.hint {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .btn {
   font: inherit;
   padding: 6px 12px;
@@ -82,14 +198,118 @@ body {
   color: var(--fg);
   cursor: pointer;
 }
-.btn-float {
-  position: absolute;
-  top: 8px;
-  left: 8px;
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
-.readout {
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.warnings {
+  margin: 0 0 10px;
+  padding: 8px 10px 8px 24px;
+  border: 1px solid var(--warn);
+  border-radius: 6px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-weight: 600;
+}
+.warnings li + li {
+  margin-top: 2px;
+}
+.panel-actions {
   display: flex;
-  gap: 16px;
-  padding: 8px 16px;
-  font-variant-numeric: tabular-nums;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.param-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.param-row {
+  display: grid;
+  grid-template-columns: 1fr 84px 42px;
+  grid-template-areas:
+    "label num unit"
+    "slider slider slider";
+  align-items: center;
+  gap: 2px 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border);
+}
+.param-row-bool {
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "label check";
+}
+.param-label {
+  grid-area: label;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+.param-key {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.slider {
+  grid-area: slider;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.num {
+  grid-area: num;
+  width: 100%;
+  font: inherit;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  text-align: right;
+}
+.unit {
+  grid-area: unit;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.param-row-bool input[type="checkbox"] {
+  grid-area: check;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+/* 모바일 (≤ 899px): 뷰어 위, 패널 아래로 쌓임. 패널은 접을 수 있음 */
+@media (max-width: 899px) {
+  .app {
+    height: auto;
+    min-height: 100%;
+  }
+  .layout {
+    flex-direction: column;
+  }
+  .viewer {
+    flex: 0 0 auto;
+    height: 52vh;
+    min-height: 280px;
+  }
+  .panel {
+    flex: 0 0 auto;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .panel-body {
+    overflow: visible;
+  }
+  .param-row {
+    grid-template-columns: 1fr 76px 40px;
+  }
 }

@@ -1,0 +1,128 @@
+/**
+ * 파라미터 패널: 슬라이더 + 숫자 입력 (한국어 라벨), 규칙 경고(빨간 글씨), 초기값 복원.
+ */
+import { useEffect, useState } from "react";
+import {
+  BOOLEAN_PARAM_SPECS,
+  NUMERIC_PARAM_SPECS,
+  type BooleanParamKey,
+  type NumericParamKey,
+  type NumericParamSpec,
+  type PistonParams,
+  type RuleWarning,
+} from "../cad/params";
+
+export interface ParamPanelProps {
+  params: PistonParams;
+  warnings: RuleWarning[];
+  onNumberChange: (key: NumericParamKey, value: number) => void;
+  onBooleanChange: (key: BooleanParamKey, value: boolean) => void;
+  onReset: () => void;
+  isDefault: boolean;
+}
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, v));
+}
+
+/** 숫자 입력: 타이핑 중간 상태를 허용하고, 유효한 값일 때만 커밋 · blur 시 범위로 자름 */
+function NumberField({ spec, value, onCommit }: { spec: NumericParamSpec; value: number; onCommit: (v: number) => void }) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
+
+  const commit = (raw: string, clampNow: boolean) => {
+    const n = Number(raw);
+    if (raw.trim() === "" || !Number.isFinite(n)) {
+      if (clampNow) setText(String(value));
+      return;
+    }
+    if (clampNow) {
+      const c = clamp(n, spec.min, spec.max);
+      setText(String(c));
+      if (c !== value) onCommit(c);
+      return;
+    }
+    if (n >= spec.min && n <= spec.max && n !== value) onCommit(n);
+  };
+
+  return (
+    <input
+      className="num"
+      type="number"
+      inputMode="decimal"
+      min={spec.min}
+      max={spec.max}
+      step={spec.step}
+      value={text}
+      aria-label={`${spec.label} 숫자 입력`}
+      onChange={(e) => {
+        setText(e.target.value);
+        commit(e.target.value, false);
+      }}
+      onBlur={(e) => commit(e.target.value, true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") commit((e.target as HTMLInputElement).value, true);
+      }}
+    />
+  );
+}
+
+export default function ParamPanel({ params, warnings, onNumberChange, onBooleanChange, onReset, isDefault }: ParamPanelProps) {
+  return (
+    <div className="param-panel">
+      {warnings.length > 0 && (
+        <ul className="warnings" role="alert" data-testid="warnings">
+          {warnings.map((w) => (
+            <li key={w.code}>⚠ {w.message}</li>
+          ))}
+        </ul>
+      )}
+      <div className="panel-actions">
+        <button className="btn" type="button" onClick={onReset} disabled={isDefault} data-testid="reset">
+          초기값 복원
+        </button>
+      </div>
+      <div className="param-list">
+        {NUMERIC_PARAM_SPECS.map((spec) => {
+          const v = params[spec.key];
+          return (
+            <div className="param-row" key={spec.key}>
+              <label className="param-label" htmlFor={`slider-${spec.key}`}>
+                <span>{spec.label}</span>
+                <span className="param-key">{spec.key}</span>
+              </label>
+              <input
+                id={`slider-${spec.key}`}
+                className="slider"
+                type="range"
+                min={spec.min}
+                max={spec.max}
+                step={spec.step}
+                value={v}
+                onChange={(e) => onNumberChange(spec.key, Number(e.target.value))}
+              />
+              <NumberField spec={spec} value={v} onCommit={(n) => onNumberChange(spec.key, n)} />
+              <span className="unit">{spec.unit}</span>
+            </div>
+          );
+        })}
+        {BOOLEAN_PARAM_SPECS.map((spec) => (
+          <div className="param-row param-row-bool" key={spec.key}>
+            <label className="param-label" htmlFor={`check-${spec.key}`}>
+              <span>{spec.label}</span>
+              <span className="param-key">{spec.key}</span>
+            </label>
+            <input
+              id={`check-${spec.key}`}
+              type="checkbox"
+              checked={params[spec.key]}
+              onChange={(e) => onBooleanChange(spec.key, e.target.checked)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
