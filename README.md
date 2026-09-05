@@ -36,28 +36,40 @@ npm run build        # vite build
 npm test             # vitest run — Node 에서 wasm 을 로드해 커널 테스트
 ```
 
-### 최종 실행 결과 (2026-09-05, 이 컨테이너)
+### 최종 실행 결과 (2026-09-05, 이 컨테이너, 원문)
 
-`npm run typecheck` — 오류 0 (출력 없음)
+```
+$ npm run typecheck
+> tsc --noEmit
+exit=0                      # 오류 0 (출력 없음)
 
-`npm run build`
-```
-dist/index.html                                    0.42 kB
-dist/assets/cad.worker-*.js                      264.32 kB
-dist/assets/replicad_single-*.wasm            22,980.27 kB │ gzip: 7,234 kB
-dist/assets/index-*.css                            4.55 kB
-dist/assets/index-*.js                           991.20 kB │ gzip: ~272 kB
-✓ built in ~2 s
+$ npm run build
+vite v8.2.2 building client environment for production...
+✓ 592 modules transformed.
+dist/assets/__vite-browser-external-CTKcSKTa.js       0.09 kB
+dist/index.html                                       0.81 kB │ gzip:     0.47 kB
+dist/assets/cad.worker-q1EfWdeH.js                  264.48 kB
+dist/assets/replicad_single-B_1cTsn_.wasm        22,980.26 kB │ gzip: 7,315.62 kB
+dist/assets/index-Cb0bsiAU.css                        4.85 kB │ gzip:     1.65 kB
+dist/assets/index-Be5zf-mV.js                       992.01 kB │ gzip:   273.91 kB
+✓ built in 1.91s
+exit=0
+
+$ npm test
+ RUN  v4.1.11 /home/user/piston-webcad-demo
+ Test Files  5 passed (5)
+      Tests  21 passed (21)
+   Duration  4.21s (transform 238ms, setup 0ms, import 401ms, tests 6.88s, environment 0ms)
+exit=0
 ```
 
-`npm test`
+테스트 구성:
 ```
- ✓ tests/params.test.ts   (9)   유도값·경고 5종·clamp·파일명
- ✓ tests/errors.test.ts   (2)   wasm 예외 → 읽을 수 있는 OpenCascade 메시지
- ✓ tests/urlState.test.ts (3)   URL 쿼리 동기화
- ✓ tests/piston.test.ts   (5)   (1) 기본값 면 ≥ 40 & 체적 80k~120k, (4) 극단값 2세트, 단계 오류
- ✓ tests/export.test.ts   (2)   (2) STEP "ISO-10303-21" & > 50,000자, (3) STL > 10,000
- Test Files  5 passed (5) / Tests  21 passed (21)
+ tests/params.test.ts   (9)   유도값·경고 5종·clamp·파일명 — 게이트 (5)
+ tests/errors.test.ts   (2)   wasm 예외 → 읽을 수 있는 OpenCascade 메시지
+ tests/urlState.test.ts (3)   URL 쿼리 동기화
+ tests/piston.test.ts   (5)   (1) 기본값 면 ≥ 40 & 체적 80k~120k, (4) 극단값 2세트, 단계 오류
+ tests/export.test.ts   (2)   (2) STEP "ISO-10303-21" & > 50,000자, (3) STL > 10,000
 ```
 
 ### 크기와 성능
@@ -65,7 +77,7 @@ dist/assets/index-*.js                           991.20 kB │ gzip: ~272 kB
 | 항목 | 값 |
 |---|---|
 | wasm (`replicad_single.wasm`) | 22,980,267 바이트 (약 23.0 MB, gzip 약 7.2 MB) |
-| dist 전체 | 24,241,250 바이트 (약 24.2 MB; wasm 제외 약 1.26 MB) |
+| dist 전체 | 24,242,528 바이트 (약 24.2 MB; wasm 제외 약 1.26 MB) |
 | 커널 로드 (헤드리스 Chromium, 로컬 preview) | 약 200–750 ms |
 | 기본값 생성 (Node vitest, 형상만) | 약 0.86 s (CPU 여유 있을 때) ~ 1.6 s (부하 시) |
 | 기본값 생성 (브라우저 워커, 형상 + 메시 추출) | 약 0.5–1.4 s |
