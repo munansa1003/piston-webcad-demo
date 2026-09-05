@@ -66,6 +66,10 @@ body {
 }
 .status {
   min-width: 0;
+  flex: 1 1 200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .badge {
   display: inline-block;
@@ -88,6 +92,11 @@ body {
 .badge-error {
   color: var(--warn);
   border-color: var(--warn);
+  /* 오류 메시지는 잘리지 않고 줄바꿈되어 전부 읽히게 */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 
 /* 데스크톱: 뷰어 왼쪽 + 패널 오른쪽 */

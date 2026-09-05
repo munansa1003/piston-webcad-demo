@@ -73,7 +73,7 @@ export const NUMERIC_PARAM_SPECS: readonly NumericParamSpec[] = [
   { key: "bossWall", label: "핀 보스 벽 (핀 반경 바깥 살)", defaultValue: 6.0, min: 4, max: 10, step: 0.1, unit: "mm" },
   { key: "bossBelow", label: "핀 아래 보스 살", defaultValue: 5.0, min: 3, max: 8, step: 0.1, unit: "mm" },
   { key: "rodGap", label: "보스 안쪽 간격 (로드 자리)", defaultValue: 24.0, min: 16, max: 36, step: 0.1, unit: "mm" },
-  { key: "bossRecess", label: "보스 끝면 들어간 양", defaultValue: 4.0, min: 2, max: 8, step: 0.1, unit: "mm" },
+  { key: "bossRecess", label: "보스 끝면이 외경에서 들어간 양", defaultValue: 4.0, min: 2, max: 8, step: 0.1, unit: "mm" },
   { key: "panelAngle", label: "스커트 판 각도 (슬리퍼)", defaultValue: 110, min: 80, max: 140, step: 1, unit: "deg" },
   { key: "reliefBelowBelt", label: "벨트 아래 스커트 시작 여유", defaultValue: 1.0, min: 0.5, max: 2, step: 0.1, unit: "mm" },
   { key: "density", label: "밀도", defaultValue: 2.7, min: 2.5, max: 3.0, step: 0.01, unit: "g/cm³" },

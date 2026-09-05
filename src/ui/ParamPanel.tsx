@@ -1,5 +1,5 @@
 /**
- * 파라미터 패널: 슬라이더 + 숫자 입력 (한국어 라벨), 규칙 경고(빨간 글씨), 초기값 복원.
+ * 파라미터 패널: 슬라이더 + 숫자 입력 (한국어 라벨), 초기값 복원, 링크 복사. (규칙 경고는 App 이 패널 최상단에 표시)
  */
 import { useEffect, useState } from "react";
 import {
@@ -9,12 +9,10 @@ import {
   type NumericParamKey,
   type NumericParamSpec,
   type PistonParams,
-  type RuleWarning,
 } from "../cad/params";
 
 export interface ParamPanelProps {
   params: PistonParams;
-  warnings: RuleWarning[];
   onNumberChange: (key: NumericParamKey, value: number) => void;
   onBooleanChange: (key: BooleanParamKey, value: boolean) => void;
   onReset: () => void;
@@ -71,16 +69,9 @@ function NumberField({ spec, value, onCommit }: { spec: NumericParamSpec; value:
   );
 }
 
-export default function ParamPanel({ params, warnings, onNumberChange, onBooleanChange, onReset, onCopyLink, copied, isDefault }: ParamPanelProps) {
+export default function ParamPanel({ params, onNumberChange, onBooleanChange, onReset, onCopyLink, copied, isDefault }: ParamPanelProps) {
   return (
     <div className="param-panel">
-      {warnings.length > 0 && (
-        <ul className="warnings" role="alert" data-testid="warnings">
-          {warnings.map((w) => (
-            <li key={w.code}>⚠ {w.message}</li>
-          ))}
-        </ul>
-      )}
       <div className="panel-actions">
         <button className="btn" type="button" onClick={onCopyLink} data-testid="copy-link">
           {copied ? "복사됨 ✓" : "링크 복사"}

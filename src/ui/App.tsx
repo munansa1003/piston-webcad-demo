@@ -52,11 +52,16 @@ export default function App() {
   const [exporting, setExporting] = useState<"step" | "stl" | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const busyRef = useRef(false);
   const pendingRef = useRef<GenRequest | null>(null);
   const latestRef = useRef<GenRequest>({ params, cutaway });
   latestRef.current = { params, cutaway };
+  /** 캐시된(마지막 성공) solid 를 만든 파라미터 — 내보내기 파일명은 이것으로 짓는다 */
+  const resultParamsRef = useRef<PistonParams | null>(null);
+  /** 첫 생성 시도 이후에는 항상 디바운스를 적용 */
+  const firstAttemptRef = useRef(false);
 
   const warnings = useMemo(() => checkRules(params), [params]);
 
@@ -67,10 +72,12 @@ export default function App() {
       return;
     }
     busyRef.current = true;
+    firstAttemptRef.current = true;
     setGen({ kind: "generating" });
     let ok = false;
     try {
       const r = await getCadWorker().generate(req.params, { cutaway: req.cutaway });
+      resultParamsRef.current = req.params;
       setResult(r);
       setResultKey(requestKey(req));
       ok = true;
@@ -114,7 +121,7 @@ export default function App() {
   useEffect(() => {
     if (kernel.kind !== "ready") return;
     if (currentKey === resultKey && gen.kind !== "error") return;
-    const delay = resultKey === "" ? 0 : DEBOUNCE_MS;
+    const delay = firstAttemptRef.current ? DEBOUNCE_MS : 0;
     const id = window.setTimeout(() => void runGenerate(latestRef.current), delay);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,12 +156,15 @@ export default function App() {
 
   const exportFile = useCallback(async (kind: "step" | "stl") => {
     setExporting(kind);
+    setExportError(null);
     try {
       const worker = getCadWorker();
       const blob = kind === "step" ? await worker.exportSTEP() : await worker.exportSTL();
-      downloadBlob(blob, exportFileName(latestRef.current.params, kind));
+      // 파일명은 실제로 내보내는 캐시 solid 의 파라미터 기준 (아직 재생성 전인 최신 입력값이 아님)
+      const named = resultParamsRef.current ?? latestRef.current.params;
+      downloadBlob(blob, exportFileName(named, kind));
     } catch (err) {
-      setGen({ kind: "error", message: `내보내기 실패: ${err instanceof Error ? err.message : String(err)}` });
+      setExportError(err instanceof Error ? err.message : String(err));
     } finally {
       setExporting(null);
     }
@@ -174,8 +184,13 @@ export default function App() {
             <span className="badge badge-ok">준비됨 · 커널 {Math.round(kernel.loadMs)} ms</span>
           )}
           {kernel.kind === "ready" && gen.kind === "error" && (
-            <span className="badge badge-error" title={gen.message}>
+            <span className="badge badge-error" data-testid="gen-error">
               생성 실패 (마지막 성공 모델 유지): {gen.message}
+            </span>
+          )}
+          {exportError && (
+            <span className="badge badge-error" data-testid="export-error">
+              내보내기 실패: {exportError}
             </span>
           )}
         </div>
@@ -214,6 +229,13 @@ export default function App() {
             <span aria-hidden="true">{panelOpen ? "▾" : "▸"}</span>
           </button>
           <div className="panel-body" hidden={!panelOpen}>
+            {warnings.length > 0 && (
+              <ul className="warnings" role="alert" data-testid="warnings">
+                {warnings.map((w) => (
+                  <li key={w.code}>⚠ {w.message}</li>
+                ))}
+              </ul>
+            )}
             <Readout
               result={result}
               density={params.density}
@@ -224,7 +246,6 @@ export default function App() {
             />
             <ParamPanel
               params={params}
-              warnings={warnings}
               onNumberChange={onNumberChange}
               onBooleanChange={onBooleanChange}
               onReset={onReset}
