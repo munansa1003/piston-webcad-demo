@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Viewer from "./Viewer";
 import { getCadWorker } from "../worker/client";
-import { DEFAULT_PARAMS, type PistonParams } from "../cad/params";
+import { DEFAULT_PARAMS, exportFileName, type PistonParams } from "../cad/params";
 import type { GenerateResult } from "../worker/api";
+import { downloadBlob } from "./download";
 
 type KernelState = { kind: "loading" } | { kind: "ready"; loadMs: number } | { kind: "error"; message: string };
 type GenState = { kind: "idle" } | { kind: "generating" } | { kind: "error"; message: string };
@@ -12,7 +13,21 @@ export default function App() {
   const [gen, setGen] = useState<GenState>({ kind: "idle" });
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [frameRequest, setFrameRequest] = useState(0);
+  const [exporting, setExporting] = useState<"step" | "stl" | null>(null);
   const params = useRef<PistonParams>({ ...DEFAULT_PARAMS });
+
+  const exportFile = useCallback(async (kind: "step" | "stl") => {
+    setExporting(kind);
+    try {
+      const worker = getCadWorker();
+      const blob = kind === "step" ? await worker.exportSTEP() : await worker.exportSTL();
+      downloadBlob(blob, exportFileName(params.current, kind));
+    } catch (err) {
+      setGen({ kind: "error", message: `내보내기 실패: ${err instanceof Error ? err.message : String(err)}` });
+    } finally {
+      setExporting(null);
+    }
+  }, []);
 
   const generate = useCallback(async (p: PistonParams) => {
     setGen({ kind: "generating" });
@@ -68,6 +83,12 @@ export default function App() {
           <span>면 {result.faceCount}개</span>
           <span>체적 {Math.round(result.volume).toLocaleString()} mm³</span>
           <span>생성 {Math.round(result.timeMs)} ms</span>
+          <button className="btn" type="button" disabled={exporting !== null} onClick={() => void exportFile("step")}>
+            {exporting === "step" ? "STEP 생성 중…" : "STEP 다운로드"}
+          </button>
+          <button className="btn" type="button" disabled={exporting !== null} onClick={() => void exportFile("stl")}>
+            {exporting === "stl" ? "STL 생성 중…" : "STL 다운로드"}
+          </button>
         </section>
       )}
     </div>

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * vitest (Node) 에서 OpenCascade wasm 을 한 번 로드해 replicad 에 주입한다.
  * replicad 자체 테스트(packages/replicad/__tests__/setup.ts)와 같은 방식이되,
