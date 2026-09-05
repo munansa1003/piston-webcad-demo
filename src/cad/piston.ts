@@ -6,6 +6,7 @@
  */
 import { makeBox, makeCylinder, type Shape3D } from "replicad";
 import { derive, type DerivedValues, type PistonParams } from "./params";
+import { describeCadError } from "./errors";
 
 export interface BuildResult {
   solid: Shape3D;
@@ -16,17 +17,13 @@ export interface BuildResult {
 /** 불리언 도구 형상이 경계면과 정확히 겹치지 않게 주는 여유 */
 const EPS = 1.0;
 
-class StepError extends Error {
+export class StepError extends Error {
+  readonly step: number;
   constructor(step: number, name: string, cause: unknown) {
-    super(`[단계 ${step}: ${name}] ${describe(cause)}`);
+    super(`[단계 ${step}: ${name}] ${describeCadError(cause)}`);
     this.name = "PistonStepError";
+    this.step = step;
   }
-}
-
-function describe(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "number") return `OpenCascade 예외 (코드 ${err})`;
-  return String(err);
 }
 
 function runStep<T>(step: number, name: string, fn: () => T): T {

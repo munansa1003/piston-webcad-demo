@@ -16,6 +16,7 @@
 ```
 src/cad/params.ts        파라미터 타입·기본값·범위·유도값·규칙검사 (순수 함수, 커널 무관)
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
+src/cad/errors.ts        wasm 예외(WebAssembly.Exception) → OC.getExceptionMessage 로 읽을 수 있는 메시지
 src/cad/piston.ts        형상 생성 8단계 (replicad). 단계별 함수, 실패 시 "[단계 N: 이름]" 오류
 src/worker/cad.worker.ts wasm 1회 로드 + comlink expose: init/generate/exportSTEP/exportSTL/hasCached
 src/worker/api.ts        워커 ↔ 메인 공유 타입 (메인 스레드는 replicad 를 import 하지 않는다)

@@ -26,3 +26,9 @@
 - 숫자 입력은 타이핑 중간 상태를 허용하고 범위 안의 유효한 값만 즉시 반영, blur/Enter 시 범위로 잘라낸다.
 - URL 동기화는 기본값과 다른 키만 쿼리에 넣고 `history.replaceState` 로 갱신한다 (히스토리 오염 방지). 잘못된 값은 무시, 범위 밖은 clamp.
 - 테스트용 `@types/node` 를 devDependency 로 추가 (tests/setup.ts 의 `node:module` 타입). 앱 코드에는 영향 없음 — `/// <reference types="node" />` 로 테스트 파일에만 스코프.
+- (리뷰 반영) 규칙 경고는 패널 최상단(리드아웃보다 위)에 표시한다 — MUST 5 "패널 상단" 문구 그대로.
+- (리뷰 반영) 내보내기 파일명은 슬라이더의 현재 값이 아니라 실제로 내보내는 캐시 solid 를 만든 파라미터로 짓는다 (재생성 전 클릭해도 파일명과 내용이 일치).
+- (리뷰 반영) 자동 재생성 효과는 `resultKey` 도 의존성에 넣는다. 생성 중에 값을 바꿨다가 원래 값으로 되돌리면, 진행 중이던 다른 값의 결과가 표시된 채 재생성이 누락되던 버그 수정. 같은 값으로 실패한 뒤에는 값이 바뀔 때까지 자동 재시도하지 않는다 (무한 루프 방지).
+- (리뷰 반영) 이 wasm 빌드는 네이티브 wasm 예외를 쓰므로 OCCT 실패가 `WebAssembly.Exception` 으로 온다. `src/cad/errors.ts` 의 `describeCadError` 가 `OC.getExceptionMessage` 로 풀어 단계 오류 메시지에 넣는다 (예: `[단계 2: 속 파기] OpenCascade: Standard_ConstructionError`).
+- (리뷰 반영) 워커 스크립트 로드/최상위 실행 실패는 comlink 가 감지하지 못하므로 Worker `error` 이벤트를 `init()` 과 race 해 "커널 오류" 로 표시한다.
+- (리뷰 반영) 절개 불리언이 실패하면 전체 모델을 표시하고 힌트를 띄운다. 메시 추출이 실패하면 새로 만든 solid 를 해제하고 `[단계 9: 메시 추출]` 오류를 던진다 (마지막 성공본 유지).

@@ -30,6 +30,8 @@ export interface GenerateResult {
   warnings: RuleWarning[];
   /** 챔퍼가 적용되었는지 (실패 시 생략됨) */
   chamferApplied: boolean;
+  /** 절개 보기를 요청했고 실제로 적용되었는지 (실패 시 전체 모델 표시) */
+  cutawayApplied: boolean;
 }
 
 export interface CadWorkerApi {

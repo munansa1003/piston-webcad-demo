@@ -124,6 +124,17 @@ body {
   display: flex;
   gap: 6px;
 }
+.viewer-hint {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: var(--warn);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
 .overlay {
   position: absolute;
   inset: 0;

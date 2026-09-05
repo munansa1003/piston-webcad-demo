@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Viewer from "./Viewer";
 import ParamPanel from "./ParamPanel";
 import Readout from "./Readout";
-import { getCadWorker } from "../worker/client";
+import { getCadWorker, workerFailure } from "../worker/client";
 import {
   DEFAULT_PARAMS,
   checkRules,
@@ -62,6 +62,8 @@ export default function App() {
   const resultParamsRef = useRef<PistonParams | null>(null);
   /** 첫 생성 시도 이후에는 항상 디바운스를 적용 */
   const firstAttemptRef = useRef(false);
+  /** 마지막으로 실제 시도한 요청 키 — 같은 값으로 실패한 뒤 자동 재시도(무한 루프)를 막는다 */
+  const lastAttemptKeyRef = useRef("");
 
   const warnings = useMemo(() => checkRules(params), [params]);
 
@@ -73,6 +75,7 @@ export default function App() {
     }
     busyRef.current = true;
     firstAttemptRef.current = true;
+    lastAttemptKeyRef.current = requestKey(req);
     setGen({ kind: "generating" });
     let ok = false;
     try {
@@ -100,8 +103,7 @@ export default function App() {
   // 커널 로드 (1회)
   useEffect(() => {
     let cancelled = false;
-    getCadWorker()
-      .init()
+    Promise.race([getCadWorker().init(), workerFailure()])
       .then(({ loadMs }) => {
         if (cancelled) return;
         setKernel({ kind: "ready", loadMs });
@@ -117,15 +119,21 @@ export default function App() {
   }, []);
 
   // 파라미터/절개 변경 → 300ms 디바운스 후 자동 재생성 (형상에 영향 있는 경우만). 첫 생성은 지연 없이.
+  // resultKey 도 의존성에 넣어, 생성 중에 파라미터가 바뀌었다 돌아온 경우(표시 모델 ≠ 현재 값)도 놓치지 않는다.
   const currentKey = requestKey({ params, cutaway });
   useEffect(() => {
     if (kernel.kind !== "ready") return;
-    if (currentKey === resultKey && gen.kind !== "error") return;
+    if (currentKey === resultKey) {
+      // 표시 중인 모델이 현재 값과 일치. 다른 값에서 난 실패 상태만 정리한다.
+      if (gen.kind === "error" && !busyRef.current) setGen({ kind: "idle" });
+      return;
+    }
+    // 같은 값으로 이미 실패했으면 값이 바뀔 때까지 재시도하지 않는다
+    if (gen.kind === "error" && currentKey === lastAttemptKeyRef.current) return;
     const delay = firstAttemptRef.current ? DEBOUNCE_MS : 0;
     const id = window.setTimeout(() => void runGenerate(latestRef.current), delay);
     return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentKey, kernel.kind, runGenerate]);
+  }, [currentKey, resultKey, gen.kind, kernel.kind, runGenerate]);
 
   // 파라미터 → URL 쿼리스트링 (기본값과 다른 값만). 링크로 공유 가능.
   useEffect(() => {
@@ -215,6 +223,9 @@ export default function App() {
           </div>
           {kernel.kind === "loading" && <div className="overlay">커널(wasm) 로딩 중… (약 23 MB)</div>}
           {kernel.kind === "ready" && gen.kind === "generating" && !result && <div className="overlay">생성 중…</div>}
+          {result && cutaway && !stale && !result.cutawayApplied && (
+            <div className="viewer-hint">절개 불리언이 실패해 전체 모델을 표시합니다</div>
+          )}
         </section>
 
         <aside className={`panel${panelOpen ? "" : " panel-collapsed"}`} aria-label="파라미터 패널">

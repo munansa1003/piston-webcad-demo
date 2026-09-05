@@ -53,10 +53,11 @@ dist/assets/index-*.js                           991.20 kB │ gzip: ~272 kB
 `npm test`
 ```
  ✓ tests/params.test.ts   (9)   유도값·경고 5종·clamp·파일명
+ ✓ tests/errors.test.ts   (2)   wasm 예외 → 읽을 수 있는 OpenCascade 메시지
  ✓ tests/urlState.test.ts (3)   URL 쿼리 동기화
  ✓ tests/piston.test.ts   (5)   (1) 기본값 면 ≥ 40 & 체적 80k~120k, (4) 극단값 2세트, 단계 오류
  ✓ tests/export.test.ts   (2)   (2) STEP "ISO-10303-21" & > 50,000자, (3) STL > 10,000
- Test Files  4 passed (4) / Tests  19 passed (19)
+ Test Files  5 passed (5) / Tests  21 passed (21)
 ```
 
 ### 크기와 성능
@@ -85,6 +86,7 @@ dist/assets/index-*.js                           991.20 kB │ gzip: ~272 kB
 - 값 변경(외경 90, 벨트 벽 4) → 경고 표시 + 재생성(체적 110,318 mm³) → 초기값 복원 → 97,533 mm³
 - 390 px: 뷰어 위·패널 아래로 쌓이고 가로 스크롤 없음, 패널 접기/펼치기 동작
 - `?D=90&valvePockets=0` 로 열면 값이 반영되고 변경 시 URL 이 갱신됨, 1/4 절개 토글, 다크 모드 배경
+- 생성 중에 값을 바꿨다가 원래 값으로 되돌려도 최종 표시 모델이 현재 값과 일치 (재생성 누락 없음)
 
 ## Vercel 배포
 
@@ -127,12 +129,16 @@ dist/assets/index-*.js                           991.20 kB │ gzip: ~272 kB
 | 4 | 배유 구멍이 중심에서 시작하면 파라미터에 따라 핀 보스를 관통할 수 있음 | 벨트 안쪽 공동(R−beltWall−1)에서 시작해 바깥으로만 관통 |
 | 5 | `tests/setup.ts` 의 `node:module` 타입 | `@types/node` 를 dev 의존성으로 추가하고 `/// <reference types="node" />` 로 테스트 파일에만 적용 |
 | 6 | 시작 직후 같은 파라미터로 생성이 두 번 돌고, 연속 생성 사이에 "준비됨" 이 깜빡임 | 첫 생성은 디바운스 효과 한 곳에서만(지연 0), 대기열이 있으면 idle 로 바꾸지 않음, 같은 키 재생성은 건너뜀 |
+| 7 | (리뷰) 생성 중 값을 바꿨다 되돌리면 재생성이 누락돼 다른 값의 모델이 남음 | 재생성 효과가 `resultKey` 변화도 감시. 같은 값 실패 후 자동 재시도는 금지 |
+| 7 | (리뷰) OCCT 실패가 `[object WebAssembly.Exception]` 으로만 보임 | `describeCadError` 가 `OC.getExceptionMessage` 로 풀어 단계 오류에 포함 |
+| 7 | (리뷰) 워커 스크립트 로드 실패 시 "로딩 중" 에서 멈춤 | Worker `error` 이벤트를 `init()` 과 race |
 
 ## 파일
 
 ```
 src/cad/params.ts        파라미터 정의·기본값·범위·유도값·규칙검사 (순수 함수)
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
+src/cad/errors.ts        wasm 예외 → 읽을 수 있는 메시지
 src/cad/piston.ts        형상 생성 8단계 (replicad)
 src/worker/cad.worker.ts wasm 1회 로드 + comlink API (init/generate/exportSTEP/exportSTL)
 src/worker/api.ts        워커 ↔ 메인 공유 타입
