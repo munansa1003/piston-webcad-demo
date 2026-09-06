@@ -17,6 +17,15 @@ STEP/STL 파일로 내려받는 것이 실제로 되는지 확인하는 **실현
 - 초기값 복원, 파라미터 ↔ URL 쿼리스트링 동기화(링크 복사), 다크/라이트 자동
 - 모바일(390 px): 뷰어 위 · 패널 아래, 패널 접기/펼치기
 
+## 라이브 데모
+
+- GitHub Pages: <https://munansa1003.github.io/piston-webcad-demo/> — `.github/workflows/pages.yml` 이 기본 브랜치 push 마다 typecheck → test → build → 배포한다.
+  처음 한 번은 리포 **Settings → Pages → Build and deployment → Source** 를 **GitHub Actions** 로 바꾼 뒤 Actions 탭에서 실패한 실행을 **Re-run** 해야 한다
+  (Actions 토큰은 Pages 사이트를 새로 만들 권한이 없어 첫 실행이 `Resource not accessible by integration` 으로 실패한다).
+- 임시 미리보기(Pages 켜기 전): `preview-dist` 브랜치에 `vite build --base=./` 결과물이 있다.
+  <https://rawcdn.githack.com/munansa1003/piston-webcad-demo/d2da47a50995d2fd358340b5b29c653bbde106dd/index.html>
+  (제3자 CDN, 이 브랜치는 Pages 가 켜지면 삭제해도 됨)
+
 ## 실행
 
 ```bash
