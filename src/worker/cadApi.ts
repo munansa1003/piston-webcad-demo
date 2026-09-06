@@ -11,7 +11,15 @@ import { describeCadError } from "../cad/errors";
 import { checkRules, derive, type PistonParams } from "../cad/params";
 import type { CadWorkerApi, GenerateResult } from "./api";
 
-export function createCadApi(loadOC: () => Promise<OpenCascadeInstance>, beforeBuild?: () => Promise<void>): CadWorkerApi {
+export interface CadApiOptions {
+  /** 동기 형상 생성 직전에 호출 (메인 스레드 변형이 "생성 중" 을 그릴 시간을 주는 용도) */
+  beforeBuild?: () => Promise<void>;
+  /** STL 을 바이너리로 내보낼지 (기본 true). 아티팩트 뷰어처럼 텍스트만 저장 가능한 곳은 false */
+  stlBinary?: boolean;
+}
+
+export function createCadApi(loadOC: () => Promise<OpenCascadeInstance>, options: CadApiOptions = {}): CadWorkerApi {
+const { beforeBuild, stlBinary = true } = options;
 let initPromise: Promise<{ loadMs: number }> | null = null;
 
 /** 마지막 성공 solid (export 는 이것만 사용, 재생성 금지) */
@@ -128,7 +136,7 @@ const api: CadWorkerApi = {
 
   async exportSTL(): Promise<Blob> {
     if (!lastSolid) throw new Error("내보낼 모델이 없습니다 (먼저 생성하세요)");
-    return lastSolid.blobSTL({ tolerance: 0.05, angularTolerance: 10 * DEG2RAD, binary: true });
+    return lastSolid.blobSTL({ tolerance: 0.05, angularTolerance: 10 * DEG2RAD, binary: stlBinary });
   },
 
   async hasCached(): Promise<boolean> {

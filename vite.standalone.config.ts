@@ -10,7 +10,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     dedupe: ["react", "react-dom", "three"],
-    alias: [{ find: /^\.\.\/worker\/client$/, replacement: "/src/standalone/client.ts" }],
+    alias: [
+      { find: /^\.\.\/worker\/client$/, replacement: "/src/standalone/client.ts" },
+      { find: /^\.\/download$/, replacement: "/src/standalone/download.ts" },
+    ],
   },
   optimizeDeps: { exclude: ["replicad-opencascadejs"] },
   base: "./",

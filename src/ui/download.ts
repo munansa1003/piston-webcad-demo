@@ -1,5 +1,5 @@
-/** Blob 을 파일로 내려받기 (외부 라이브러리 없이) */
-export function downloadBlob(blob: Blob, fileName: string): void {
+/** Blob 을 파일로 내려받기 (외부 라이브러리 없이). 단일 파일 빌드는 src/standalone/download.ts 로 대체된다. */
+export function downloadBlob(blob: Blob, fileName: string): void | Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

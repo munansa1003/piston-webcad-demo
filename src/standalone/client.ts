@@ -13,7 +13,7 @@ const yieldToPaint = () => new Promise<void>((r) => setTimeout(r, 30));
 let api: CadWorkerApi | null = null;
 
 export function getCadWorker(): CadWorkerApi {
-  if (!api) api = createCadApi(loadEmbeddedOC, yieldToPaint);
+  if (!api) api = createCadApi(loadEmbeddedOC, { beforeBuild: yieldToPaint, stlBinary: false });
   return api;
 }
 

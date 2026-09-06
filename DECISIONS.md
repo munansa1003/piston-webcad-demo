@@ -35,3 +35,4 @@
 - (배포) Vercel 계정/토큰이 세션에 없고 GitHub Pages API 도 프록시가 막아, claude.ai 아티팩트로 바로 볼 수 있는 **단일 파일 빌드**를 추가했다 (`npm run build:standalone` → `dist-standalone/piston-webcad-standalone.html`, 약 10.4 MiB). wasm 은 gzip 후 base64 로 HTML 에 내장하고 브라우저의 `DecompressionStream` 으로 풀어 emscripten `wasmBinary` 로 넘긴다 (외부 요청 0건).
 - (배포) 아티팩트 환경은 워커 스크립트 로드/외부 fetch 가 막혀 있어 단일 파일 빌드는 워커 대신 메인 스레드에서 같은 API(`createCadApi`)를 실행한다. 정식 앱(`npm run build`)은 그대로 워커를 쓴다 — "메인 스레드에서 replicad import 금지" 규칙은 정식 앱에만 적용.
 - (구조) 워커 로직을 `src/worker/cadApi.ts` 의 `createCadApi(loadOC)` 팩토리로 분리해 워커와 단일 파일 빌드가 같은 코드를 쓴다.
+- (아티팩트) 아티팩트 뷰어는 일반 다운로드 링크를 막고 `downloads` 기능으로만 파일을 건네며 허용 확장자에 .step/.stl 이 없다. 단일 파일 빌드는 STEP(원래 텍스트)과 ASCII STL 을 `.step.txt` / `.stl.txt` 로 저장하게 하고(받은 뒤 `.txt` 제거), 정식 앱은 그대로 바이너리 STL + 일반 다운로드.

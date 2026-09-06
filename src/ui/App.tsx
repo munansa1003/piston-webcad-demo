@@ -170,7 +170,7 @@ export default function App() {
       const blob = kind === "step" ? await worker.exportSTEP() : await worker.exportSTL();
       // 파일명은 실제로 내보내는 캐시 solid 의 파라미터 기준 (아직 재생성 전인 최신 입력값이 아님)
       const named = resultParamsRef.current ?? latestRef.current.params;
-      downloadBlob(blob, exportFileName(named, kind));
+      await downloadBlob(blob, exportFileName(named, kind));
     } catch (err) {
       setExportError(err instanceof Error ? err.message : String(err));
     } finally {
