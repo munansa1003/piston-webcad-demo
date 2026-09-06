@@ -14,8 +14,9 @@
   --viewer-top: #e9eef3;
   --viewer-bottom: #cfd8e0;
 }
+/* 다크 토큰: OS 설정(명시적 라이트 선택이 없을 때) 또는 호스트의 data-theme="dark" 스탬프 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #14181d;
     --fg: #e6ebf0;
     --muted: #9aa5b1;
@@ -29,6 +30,20 @@
     --viewer-top: #232a32;
     --viewer-bottom: #11161b;
   }
+}
+:root[data-theme="dark"] {
+    --bg: #14181d;
+    --fg: #e6ebf0;
+    --muted: #9aa5b1;
+    --panel: #1d232a;
+    --border: #364049;
+    --accent: #3b82f6;
+    --accent-fg: #ffffff;
+    --ok: #4ade80;
+    --warn: #f87171;
+    --warn-bg: #2a1a1a;
+    --viewer-top: #232a32;
+    --viewer-bottom: #11161b;
 }
 * {
   box-sizing: border-box;
