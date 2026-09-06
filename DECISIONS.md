@@ -32,3 +32,6 @@
 - (리뷰 반영) 이 wasm 빌드는 네이티브 wasm 예외를 쓰므로 OCCT 실패가 `WebAssembly.Exception` 으로 온다. `src/cad/errors.ts` 의 `describeCadError` 가 `OC.getExceptionMessage` 로 풀어 단계 오류 메시지에 넣는다 (예: `[단계 2: 속 파기] OpenCascade: Standard_ConstructionError`).
 - (리뷰 반영) 워커 스크립트 로드/최상위 실행 실패는 comlink 가 감지하지 못하므로 Worker `error` 이벤트를 `init()` 과 race 해 "커널 오류" 로 표시한다.
 - (리뷰 반영) 절개 불리언이 실패하면 전체 모델을 표시하고 힌트를 띄운다. 메시 추출이 실패하면 새로 만든 solid 를 해제하고 `[단계 9: 메시 추출]` 오류를 던진다 (마지막 성공본 유지).
+- (배포) Vercel 계정/토큰이 세션에 없고 GitHub Pages API 도 프록시가 막아, claude.ai 아티팩트로 바로 볼 수 있는 **단일 파일 빌드**를 추가했다 (`npm run build:standalone` → `dist-standalone/piston-webcad-standalone.html`, 약 10.4 MiB). wasm 은 gzip 후 base64 로 HTML 에 내장하고 브라우저의 `DecompressionStream` 으로 풀어 emscripten `wasmBinary` 로 넘긴다 (외부 요청 0건).
+- (배포) 아티팩트 환경은 워커 스크립트 로드/외부 fetch 가 막혀 있어 단일 파일 빌드는 워커 대신 메인 스레드에서 같은 API(`createCadApi`)를 실행한다. 정식 앱(`npm run build`)은 그대로 워커를 쓴다 — "메인 스레드에서 replicad import 금지" 규칙은 정식 앱에만 적용.
+- (구조) 워커 로직을 `src/worker/cadApi.ts` 의 `createCadApi(loadOC)` 팩토리로 분리해 워커와 단일 파일 빌드가 같은 코드를 쓴다.

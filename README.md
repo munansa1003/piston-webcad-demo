@@ -26,6 +26,14 @@ STEP/STL 파일로 내려받는 것이 실제로 되는지 확인하는 **실현
   <https://rawcdn.githack.com/munansa1003/piston-webcad-demo/d2da47a50995d2fd358340b5b29c653bbde106dd/index.html>
   (제3자 CDN, 이 브랜치는 Pages 가 켜지면 삭제해도 됨)
 
+### 단일 파일 빌드 (claude.ai 아티팩트 / 오프라인)
+
+```bash
+npm run build:standalone   # dist-standalone/piston-webcad-standalone.html (약 10.4 MiB, 외부 요청 0건)
+```
+wasm 을 gzip+base64 로 HTML 에 내장하고 `DecompressionStream` 으로 풀어 로드한다. 워커 대신 메인 스레드에서 커널을 돌리므로
+생성 중 1초 정도 UI 가 멈춘다. iPadOS/Safari 16.4 이상, 최신 Chrome/Edge/Firefox 에서 동작.
+
 ## 실행
 
 ```bash
@@ -161,7 +169,9 @@ src/cad/params.ts        파라미터 정의·기본값·범위·유도값·규�
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
 src/cad/errors.ts        wasm 예외 → 읽을 수 있는 메시지
 src/cad/piston.ts        형상 생성 8단계 (replicad)
-src/worker/cad.worker.ts wasm 1회 로드 + comlink API (init/generate/exportSTEP/exportSTL)
+src/worker/cadApi.ts     CAD API 구현 (createCadApi — 워커/단일 파일 공용)
+src/worker/cad.worker.ts wasm 1회 로드 + comlink expose
+src/standalone/          단일 파일 빌드용 (내장 wasm 로더, 메인 스레드 클라이언트)
 src/worker/api.ts        워커 ↔ 메인 공유 타입
 src/worker/client.ts     워커 인스턴스 1개
 src/ui/App.tsx           상태·디바운스·대기열·URL 동기화

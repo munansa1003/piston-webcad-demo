@@ -18,7 +18,9 @@ src/cad/params.ts        파라미터 타입·기본값·범위·유도값·규�
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
 src/cad/errors.ts        wasm 예외(WebAssembly.Exception) → OC.getExceptionMessage 로 읽을 수 있는 메시지
 src/cad/piston.ts        형상 생성 8단계 (replicad). 단계별 함수, 실패 시 "[단계 N: 이름]" 오류
-src/worker/cad.worker.ts wasm 1회 로드 + comlink expose: init/generate/exportSTEP/exportSTL/hasCached
+src/worker/cadApi.ts     CAD API 구현 createCadApi(loadOC) — 워커/단일 파일 빌드 공용
+src/worker/cad.worker.ts wasm 1회 로드(locateFile) + comlink expose: init/generate/exportSTEP/exportSTL/hasCached
+src/standalone/          단일 파일(아티팩트) 빌드 전용: 내장 wasm(gzip+base64) 로더, 메인 스레드 클라이언트 (정식 앱에서 import 금지)
 src/worker/api.ts        워커 ↔ 메인 공유 타입 (메인 스레드는 replicad 를 import 하지 않는다)
 src/worker/client.ts     워커 인스턴스 1개 (파라미터 변경마다 재시작 금지)
 src/ui/App.tsx           상태 머신(커널 로딩/생성 중/오류), 300ms 디바운스, 대기열, URL 동기화
@@ -41,6 +43,7 @@ docs/screenshot.png      헤드리스 Chromium 스크린샷
 npm run typecheck   # tsc --noEmit, 오류 0
 npm run build       # vite build → dist/
 npm test            # vitest run (Node 에서 wasm 로드, ~10초)
+npm run build:standalone   # (선택) 단일 HTML 파일 → dist-standalone/, claude.ai 아티팩트 게시용
 ```
 브라우저 확인은 전역 설치된 playwright + `/opt/pw-browsers` Chromium 으로 `vite preview` 를 열어 확인한다 (앱 의존성 아님).
 
