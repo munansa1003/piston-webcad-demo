@@ -8,6 +8,19 @@ STEP/STL 파일로 내려받는 것이 실제로 되는지 확인하는 **실현
 
 ## 되는 것
 
+### 2D 도면 ↔ 3D 연동 (A경로 시제품)
+
+- **파라메트릭 단면도·평면도**: `src/cad/sketch.ts` 가 `derive(params)` 만으로 도면을 만든다 (CAD 커널 무관, 순수 함수).
+  3D 와 같은 유도값을 쓰므로 도면과 모델이 어긋날 수 없다. 해칭·숨은선·중심선·치수 포함.
+- **치수 클릭 편집**: 도면의 치수를 누르면 그 자리에서 값을 고치고, 같은 파라미터로 3D 가 다시 만들어진다.
+- **투상도 (커널 자동 생성)**: replicad `drawProjection` 으로 3D 솔리드에서 정면도/평면도/우측면도를 뽑는다.
+  숨은선 제거(HLR)까지 커널이 하므로 형상이 복잡해져도 도면이 자동으로 나온다 (기본값 정면도 379 ms, 보이는 선 34 · 숨은선 81).
+- **피처 트리**: 형상 생성 8단계를 CATIA 스펙 트리처럼 표시. 단계를 고르면 그 단계가 쓰는 파라미터만 패널에서 밝게 남고,
+  생성이 실패하면 실패한 단계를 붉게 표시한다.
+- 보기 모드 `2D + 3D` / `2D 도면` / `3D`. 모바일·태블릿에서는 세로로 쌓인다.
+
+### 그 밖에
+
 - 24개 파라미터(외경·높이·압축고·핀·링 홈·보스·스커트 …)를 슬라이더/숫자 입력으로 바꾸면 300 ms 뒤 자동 재생성
 - 3D 뷰어: 면 + 모서리 선, 회전/줌/팬(마우스·터치), 축/기즈모, 자동 카메라 프레이밍, 1/4 절개 보기
 - STEP / STL 다운로드 (파일명 예: `piston_D82_CH30.step`), 워커에 캐시된 마지막 성공 solid 를 그대로 내보냄
@@ -83,6 +96,7 @@ exit=0
 테스트 구성:
 ```
  tests/params.test.ts   (9)   유도값·경고 5종·clamp·파일명 — 게이트 (5)
+ tests/sketch.test.ts  (20)   사각형 합집합 기하, 단면 정확성, 평면도, 극단값
  tests/errors.test.ts   (2)   wasm 예외 → 읽을 수 있는 OpenCascade 메시지
  tests/urlState.test.ts (3)   URL 쿼리 동기화
  tests/piston.test.ts   (5)   (1) 기본값 면 ≥ 40 & 체적 80k~120k, (4) 극단값 2세트, 단계 오류
@@ -167,6 +181,7 @@ exit=0
 ```
 src/cad/params.ts        파라미터 정의·기본값·범위·유도값·규칙검사 (순수 함수)
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
+src/cad/sketch.ts        2D 단면도·평면도 생성 (커널 무관 순수 함수)
 src/cad/errors.ts        wasm 예외 → 읽을 수 있는 메시지
 src/cad/piston.ts        형상 생성 8단계 (replicad)
 src/worker/cadApi.ts     CAD API 구현 (createCadApi — 워커/단일 파일 공용)
@@ -177,6 +192,9 @@ src/worker/client.ts     워커 인스턴스 1개
 src/ui/App.tsx           상태·디바운스·대기열·URL 동기화
 src/ui/ParamPanel.tsx    슬라이더+숫자 입력, 경고, 초기값 복원, 링크 복사
 src/ui/Readout.tsx       체적/질량/시간/면수 + 다운로드
+src/ui/SketchView.tsx    2D 도면 렌더 + 치수 클릭 편집
+src/ui/ProjectionView.tsx 커널 투상도 (숨은선 제거)
+src/ui/FeatureTree.tsx   형상 생성 8단계 스펙 트리
 src/ui/Viewer.tsx        r3f 뷰어
 src/styles.css           스타일 한 파일
 tests/                   vitest (setup.ts 가 wasm 로드)

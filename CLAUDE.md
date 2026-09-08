@@ -17,6 +17,7 @@
 src/cad/params.ts        파라미터 타입·기본값·범위·유도값·규칙검사 (순수 함수, 커널 무관)
 src/cad/urlState.ts      파라미터 ↔ URL 쿼리 (순수 함수)
 src/cad/errors.ts        wasm 예외(WebAssembly.Exception) → OC.getExceptionMessage 로 읽을 수 있는 메시지
+src/cad/sketch.ts        2D 단면도·평면도 생성 (derive 만 사용, 커널 무관 순수 함수)
 src/cad/piston.ts        형상 생성 8단계 (replicad). 단계별 함수, 실패 시 "[단계 N: 이름]" 오류
 src/worker/cadApi.ts     CAD API 구현 createCadApi(loadOC) — 워커/단일 파일 빌드 공용
 src/worker/cad.worker.ts wasm 1회 로드(locateFile) + comlink expose: init/generate/exportSTEP/exportSTL/hasCached
@@ -26,6 +27,9 @@ src/worker/client.ts     워커 인스턴스 1개 (파라미터 변경마다 재
 src/ui/App.tsx           상태 머신(커널 로딩/생성 중/오류), 300ms 디바운스, 대기열, URL 동기화
 src/ui/ParamPanel.tsx    슬라이더+숫자 입력, 경고, 초기값 복원, 링크 복사
 src/ui/Readout.tsx       체적/질량/시간/면수 + STEP/STL 다운로드
+src/ui/SketchView.tsx    2D 도면 렌더 + 치수 클릭 편집 (파라미터 → 3D 재생성)
+src/ui/ProjectionView.tsx 커널 투상도 (drawProjection, 숨은선 제거)
+src/ui/FeatureTree.tsx   형상 생성 8단계 스펙 트리
 src/ui/Viewer.tsx        r3f 뷰어 (면+모서리, OrbitControls, 축/기즈모, 자동 프레이밍)
 tests/                   vitest (Node). setup.ts 가 wasm 을 locateFile 로 로드해 setOC
 docs/screenshot.png      헤드리스 Chromium 스크린샷
@@ -51,3 +55,5 @@ npm run build:standalone   # (선택) 단일 HTML 파일 → dist-standalone/, c
 - `npm install` 은 `.npmrc` 의 `legacy-peer-deps=true` 로 동작한다 (npm 10.9 arborist 버그 회피).
 - wasm(약 23 MB, gzip 약 7.3 MB)은 워커에서 `replicad-opencascadejs/wasm?url` 로 URL 만 받아 `locateFile` 로 로드한다.
 - replicad 의 `angularTolerance` 는 라디안이다 (15° → `15 * DEG2RAD`).
+- 2D 도면은 커널을 쓰지 않는다. `sketch.ts` 는 `derive(params)` 만 보고 그리므로 워커를 기다리지 않고 즉시 갱신된다.
+- 투상도만 커널을 쓴다 (`drawProjection`). 캐시된 마지막 성공 solid 에서 뽑으며 재생성하지 않는다.
