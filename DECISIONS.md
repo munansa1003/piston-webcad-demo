@@ -58,3 +58,14 @@
 - **어셈블리 STEP 의 한계와 해결 경로 (실측).** replicad 의 `exportSTEP([여러 shape])` 는 사실 **진짜 어셈블리 트리가 아니다**: 세 부품을 넣으면 `PRODUCT_DEFINITION` 3개 · `MANIFOLD_SOLID_BREP` 3개 · `PRESENTATION_STYLE_ASSIGNMENT` 3개는 나오지만 `NEXT_ASSEMBLY_USAGE_OCCURRENCE` 0개 · `CONTEXT_DEPENDENT_SHAPE_REPRESENTATION` 0개 — 즉 부품이 나란히 놓인 평면 구조이고, 다시 읽으면 Compound 하나로 들어온다(86 ms). CATIA 의 "Compressor.1 / Compressor 2.1" 같은 **인스턴스(occurrence)** 개념이 없다.
 - 다만 raw OpenCascade 의 XDE 계층이 이 wasm 빌드에 **바인딩되어 있다**: `TDocStd_Document`, `XCAFDoc_DocumentTool`, `XCAFDoc_ShapeTool`(`AddShape`·`AddComponent`·`SetLocation`·`FindComponent`·`RemoveComponent`·SHUO 관련), `XCAFDoc_ColorTool`, `XCAFDoc_LengthUnit`, `STEPCAFControl_Writer`. 하나의 부품 정의를 위치만 바꿔 여러 번 배치하는 진짜 어셈블리 트리는 이 API 로 만들 수 있다 — 연구 과제가 아니라 구현 과제.
 - 규모 감각 (단순 형상 기준): 부품 N개를 복제·이동·메시하는 데 N=10 → 117 ms, N=50 → 399 ms, N=200 → 622 ms / 삼각형 38,400개. 형상이 단순하면 수백 개도 무난하고, 블레이드처럼 자유곡면이면 메시 공차와 GPU 인스턴싱이 관건이다.
+
+## 서피싱(블레이드) 정밀 실측 — 앞선 낙관 판정을 정정
+- **단면을 스플라인으로 주는 것이 결정적이다.** 같은 블레이드를 폴리라인 단면으로 로프트하면 면 122개·로프트 872 ms, 스플라인 단면(`drawPointsInterpolation`)으로 주면 **면 3개·로프트 29 ms** (체적은 46,943 mm³ 로 동일). 익형 좌표를 그대로 폴리라인으로 넣으면 안 된다.
+- **곡면 연속성은 C0 에 머문다 — 이것이 GSD 와의 진짜 차이다.** raw `BRepOffsetAPI_ThruSections` 에 연속성 C1/C2 를 요구해도 결과는 `GeomAbs_C0`, U 차수 1 로 변하지 않았다 (plain 139 ms / contC1 35 ms / contC2 29 ms, 셋 다 동일 체적·동일 차수). `smoothing` 을 켜면 곡면이 바뀌긴 하지만 2,835 ms (가중치까지 주면 5,535 ms) 로 느려지고 체적도 47,110~47,250 으로 흔들린다. CATIA GSD 가 주는 G2 품질은 이 경로로 안 나온다.
+- **블레이드 루트 필렛이 실패한다 — 가장 중요한 부정적 결과.** 블레이드를 허브에 fuse 하는 것은 된다(1,021 ms, 면 5개, valid). 그러나 루트 필렛은 반경 1·2·4·8 mm **전부** `WebAssembly.Exception` 으로 실패했다 (각각 11.1 s / 1.2 s / 1.9 s / 2.1 s 소요 후 실패). 터보기계 부품에서 루트 필렛은 응력 집중 때문에 빼놓을 수 없는 형상이므로, 이 스택으로 "실제로 쓸 수 있는 블레이드"를 만들려면 필렛을 형상 생성 단계에 미리 녹여 넣는 설계(예: 단면 자체에 루트 라운드를 포함)가 필요하다.
+- **가이드 커브 스윕은 raw `BRepOffsetAPI_MakePipeShell` 로 된다** (보조 스파인 포함 122 ms, 면 6개). replicad 의 `genericSweep` 에 보조 스파인을 주는 경로는 실패한다.
+- **G2 채움 패치(`BRepOffsetAPI_MakeFilling`)는 실패한다.** 곡면 수선·연결 계열은 기대하지 말 것.
+- **곡률 해석은 된다.** `Geom_Surface` 의 EvalD2 로 61×61=3,721 점의 가우스·평균 곡률을 91 ms 에 계산. 지브라/곡률 맵 같은 곡면 품질 검사 도구는 만들 수 있다.
+- **블레이드 메시 비용 (공차별).** 0.05 → 1,615 ms / 삼각형 88,416개, 0.1 → 708 ms / 54,364개, 0.3 → 289 ms / 24,872개, 1.0 → 149 ms / 10,896개.
+- **블레이드 24장 STEP**: 923 ms, 3,000,304자, `PRODUCT` 24개, `NEXT_ASSEMBLY_USAGE_OCCURRENCE` 0개 (역시 평면 구조).
+- 정정된 결론: 블레이드의 **몸통 형상은 도달 가능**하지만, **루트 필렛과 G2 곡면 품질은 이 스택에서 도달 불가**다. 서피싱은 "된다"가 아니라 "형상은 되고 품질과 마무리는 안 된다"로 읽어야 한다.
