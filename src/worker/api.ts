@@ -34,6 +34,18 @@ export interface GenerateResult {
   cutawayApplied: boolean;
 }
 
+/** 커널이 3D 솔리드에서 직접 뽑은 투상도 (숨은선 제거) */
+export interface ProjectionResult {
+  plane: ProjectionPlaneName;
+  /** SVG path d 문자열 */
+  visible: string[];
+  hidden: string[];
+  viewBox: string;
+  ms: number;
+}
+
+export type ProjectionPlaneName = "front" | "top" | "right";
+
 export interface CadWorkerApi {
   /** wasm 로드 (1회). 여러 번 불러도 한 번만 로드된다. */
   init(): Promise<{ loadMs: number }>;
@@ -43,6 +55,8 @@ export interface CadWorkerApi {
   exportSTEP(): Promise<Blob>;
   /** 마지막 성공 solid 를 STL 로 내보냄 (재생성 없음) */
   exportSTL(): Promise<Blob>;
+  /** 마지막 성공 solid 에서 투상도를 뽑는다 (재생성 없음) */
+  project(plane: ProjectionPlaneName): Promise<ProjectionResult>;
   /** 캐시된 solid 가 있는지 */
   hasCached(): Promise<boolean>;
 }

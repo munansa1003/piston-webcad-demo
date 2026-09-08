@@ -13,6 +13,11 @@ import {
 
 export interface ParamPanelProps {
   params: PistonParams;
+  /** 도면에서 가리키고 있는 파라미터 */
+  highlightParam?: NumericParamKey | null;
+  /** 피처 트리에서 고른 단계가 쓰는 파라미터들 */
+  featureParams?: NumericParamKey[] | null;
+  onHoverParam?: (key: NumericParamKey | null) => void;
   onNumberChange: (key: NumericParamKey, value: number) => void;
   onBooleanChange: (key: BooleanParamKey, value: boolean) => void;
   onReset: () => void;
@@ -69,7 +74,7 @@ function NumberField({ spec, value, onCommit }: { spec: NumericParamSpec; value:
   );
 }
 
-export default function ParamPanel({ params, onNumberChange, onBooleanChange, onReset, onCopyLink, copied, isDefault }: ParamPanelProps) {
+export default function ParamPanel({ params, highlightParam = null, featureParams = null, onHoverParam, onNumberChange, onBooleanChange, onReset, onCopyLink, copied, isDefault }: ParamPanelProps) {
   return (
     <div className="param-panel">
       <div className="panel-actions">
@@ -83,8 +88,16 @@ export default function ParamPanel({ params, onNumberChange, onBooleanChange, on
       <div className="param-list">
         {NUMERIC_PARAM_SPECS.map((spec) => {
           const v = params[spec.key];
+          const hot = highlightParam === spec.key;
+          const inFeature = featureParams !== null && featureParams.includes(spec.key);
+          const dim = featureParams !== null && !inFeature;
           return (
-            <div className="param-row" key={spec.key}>
+            <div
+              className={`param-row${hot ? " param-row-hot" : ""}${inFeature ? " param-row-feature" : ""}${dim ? " param-row-dim" : ""}`}
+              key={spec.key}
+              onMouseEnter={() => onHoverParam?.(spec.key)}
+              onMouseLeave={() => onHoverParam?.(null)}
+            >
               <label className="param-label" htmlFor={`slider-${spec.key}`}>
                 <span>{spec.label}</span>
                 <span className="param-key">{spec.key}</span>

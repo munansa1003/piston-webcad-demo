@@ -3,13 +3,13 @@
  * - 워커: cad.worker.ts 가 locateFile(wasm URL) 로더를 넣고 comlink 로 expose
  * - 단일 파일(아티팩트) 빌드: src/standalone/ 이 wasmBinary 로더를 넣고 메인 스레드에서 직접 호출
  */
-import { setOC, DEG2RAD, measureVolume, makeBox, type Shape3D } from "replicad";
+import { setOC, DEG2RAD, measureVolume, makeBox, drawProjection, type Shape3D } from "replicad";
 import type { OpenCascadeInstance } from "replicad-opencascadejs";
 
 import { buildPiston } from "../cad/piston";
 import { describeCadError } from "../cad/errors";
 import { checkRules, derive, type PistonParams } from "../cad/params";
-import type { CadWorkerApi, GenerateResult } from "./api";
+import type { CadWorkerApi, GenerateResult, ProjectionPlaneName, ProjectionResult } from "./api";
 
 export interface CadApiOptions {
   /** 동기 형상 생성 직전에 호출 (메인 스레드 변형이 "생성 중" 을 그릴 시간을 주는 용도) */
@@ -137,6 +137,26 @@ const api: CadWorkerApi = {
   async exportSTL(): Promise<Blob> {
     if (!lastSolid) throw new Error("내보낼 모델이 없습니다 (먼저 생성하세요)");
     return lastSolid.blobSTL({ tolerance: 0.05, angularTolerance: 10 * DEG2RAD, binary: stlBinary });
+  },
+
+  async project(plane: ProjectionPlaneName): Promise<ProjectionResult> {
+    if (!lastSolid) throw new Error("투상할 모델이 없습니다 (먼저 생성하세요)");
+    const t0 = performance.now();
+    try {
+      const { visible, hidden } = drawProjection(lastSolid, plane);
+      const flat = (paths: string[] | string[][]): string[] =>
+        paths.flatMap((x) => (Array.isArray(x) ? x : [x]));
+      const result: ProjectionResult = {
+        plane,
+        visible: flat(visible.toSVGPaths()),
+        hidden: flat(hidden.toSVGPaths()),
+        viewBox: visible.toSVGViewBox(4),
+        ms: performance.now() - t0,
+      };
+      return result;
+    } catch (err) {
+      throw new Error(`[투상도] ${describeCadError(err)}`);
+    }
   },
 
   async hasCached(): Promise<boolean> {

@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Viewer from "./Viewer";
+import SketchView from "./SketchView";
+import ProjectionView from "./ProjectionView";
+import FeatureTree, { FEATURES, parseFailedStep } from "./FeatureTree";
 import ParamPanel from "./ParamPanel";
 import Readout from "./Readout";
 import { getCadWorker, workerFailure } from "../worker/client";
 import {
   DEFAULT_PARAMS,
   checkRules,
+  derive,
   exportFileName,
   type BooleanParamKey,
   type NumericParamKey,
   type PistonParams,
 } from "../cad/params";
 import { paramsToQuery, queryToParams } from "../cad/urlState";
-import type { GenerateResult } from "../worker/api";
+import { buildSketches } from "../cad/sketch";
+import type { GenerateResult, ProjectionPlaneName, ProjectionResult } from "../worker/api";
 import { downloadBlob } from "./download";
 
 type KernelState = { kind: "loading" } | { kind: "ready"; loadMs: number } | { kind: "error"; message: string };
@@ -24,6 +29,8 @@ interface GenRequest {
 }
 
 const DEBOUNCE_MS = 300;
+
+type ViewMode = "split" | "sketch" | "solid";
 
 /** 형상에 영향을 주는 파라미터만 (density 는 질량 계산에만 쓰이므로 재생성 불필요) + 절개 보기 여부 */
 function requestKey(req: GenRequest): string {
@@ -53,6 +60,15 @@ export default function App() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("split");
+  const [sketchIndex, setSketchIndex] = useState(0);
+  const [highlightParam, setHighlightParam] = useState<NumericParamKey | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  const [projPlane, setProjPlane] = useState<ProjectionPlaneName>("front");
+  const [projection, setProjection] = useState<ProjectionResult | null>(null);
+  const [projBusy, setProjBusy] = useState(false);
+  const [projError, setProjError] = useState<string | null>(null);
+  const [showHidden, setShowHidden] = useState(true);
 
   const busyRef = useRef(false);
   const pendingRef = useRef<GenRequest | null>(null);
@@ -64,8 +80,19 @@ export default function App() {
   const firstAttemptRef = useRef(false);
   /** 마지막으로 실제 시도한 요청 키 — 같은 값으로 실패한 뒤 자동 재시도(무한 루프)를 막는다 */
   const lastAttemptKeyRef = useRef("");
+  /** 생성이 진행 중이면 투상도 요청을 미룬다 */
+  const stalePending = useRef(false);
 
   const warnings = useMemo(() => checkRules(params), [params]);
+  // 2D 도면은 3D 와 같은 유도값에서 만들어지므로 커널 없이 즉시 갱신된다
+  const sketches = useMemo(() => buildSketches(params, derive(params)), [params]);
+  const showProjection = sketchIndex >= sketches.length;
+  const sketch = sketches[Math.min(sketchIndex, sketches.length - 1)] ?? sketches[0]!;
+  const failedStep = parseFailedStep(gen.kind === "error" ? gen.message : null);
+  const featureParams = useMemo(() => {
+    if (selectedFeature === null) return null;
+    return FEATURES.find((f) => f.step === selectedFeature)?.params ?? null;
+  }, [selectedFeature]);
 
   /** 한 번에 하나만 생성. 진행 중이면 최신 요청만 대기열에 남긴다. */
   const runGenerate = useCallback(async (req: GenRequest) => {
@@ -74,6 +101,7 @@ export default function App() {
       return;
     }
     busyRef.current = true;
+    stalePending.current = true;
     firstAttemptRef.current = true;
     lastAttemptKeyRef.current = requestKey(req);
     setGen({ kind: "generating" });
@@ -89,6 +117,7 @@ export default function App() {
       setGen({ kind: "error", message: err instanceof Error ? err.message : String(err) });
     } finally {
       busyRef.current = false;
+      stalePending.current = pendingRef.current !== null;
       const next = pendingRef.current;
       pendingRef.current = null;
       if (next && (!ok || requestKey(next) !== requestKey(req))) {
@@ -143,6 +172,31 @@ export default function App() {
       window.history.replaceState(null, "", url);
     }
   }, [params]);
+
+  // 투상도는 커널이 캐시된 solid 에서 뽑는다. 탭을 열었을 때·모델이 바뀌었을 때만 요청.
+  useEffect(() => {
+    if (!showProjection || viewMode === "solid" || resultKey === "" || stalePending.current) return;
+    let cancelled = false;
+    setProjBusy(true);
+    setProjError(null);
+    getCadWorker()
+      .project(projPlane)
+      .then((r) => {
+        if (!cancelled) setProjection(r);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setProjection(null);
+          setProjError(err instanceof Error ? err.message : String(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setProjBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showProjection, viewMode, projPlane, resultKey]);
 
   const onNumberChange = useCallback((key: NumericParamKey, value: number) => {
     setParams((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
@@ -205,28 +259,102 @@ export default function App() {
       </header>
 
       <div className="layout">
-        <section className="viewer" data-testid="viewer" aria-label="3D 뷰어">
-          <Viewer result={result} frameRequest={frameRequest} />
-          <div className="viewer-tools">
-            <button className="btn" type="button" onClick={() => setFrameRequest((n) => n + 1)}>
-              뷰 맞춤
-            </button>
-            <button
-              className={`btn${cutaway ? " btn-active" : ""}`}
-              type="button"
-              aria-pressed={cutaway}
-              onClick={() => setCutaway((c) => !c)}
-              data-testid="cutaway"
-            >
-              1/4 절개 {cutaway ? "켜짐" : "꺼짐"}
-            </button>
+        <div className={`stage stage-${viewMode}`} data-testid="stage">
+          <div className="stage-bar">
+            <div className="segmented" role="group" aria-label="보기 모드">
+              {([
+                ["split", "2D + 3D"],
+                ["sketch", "2D 도면"],
+                ["solid", "3D"],
+              ] as [ViewMode, string][]).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`seg${viewMode === mode ? " seg-on" : ""}`}
+                  aria-pressed={viewMode === mode}
+                  onClick={() => setViewMode(mode)}
+                  data-testid={`view-${mode}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {viewMode !== "solid" && (
+              <div className="segmented" role="group" aria-label="도면 선택">
+                {sketches.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`seg${sketchIndex === i ? " seg-on" : ""}`}
+                    aria-pressed={sketchIndex === i}
+                    onClick={() => setSketchIndex(i)}
+                  >
+                    {i === 0 ? "단면도" : "평면도"}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`seg${showProjection ? " seg-on" : ""}`}
+                  aria-pressed={showProjection}
+                  onClick={() => setSketchIndex(sketches.length)}
+                  data-testid="tab-projection"
+                >
+                  투상도
+                </button>
+              </div>
+            )}
           </div>
-          {kernel.kind === "loading" && <div className="overlay">커널(wasm) 로딩 중… (약 23 MB)</div>}
-          {kernel.kind === "ready" && gen.kind === "generating" && !result && <div className="overlay">생성 중…</div>}
-          {result && cutaway && !stale && !result.cutawayApplied && (
-            <div className="viewer-hint">절개 불리언이 실패해 전체 모델을 표시합니다</div>
-          )}
-        </section>
+
+          <div className="stage-body">
+            {viewMode !== "solid" && (
+              <section className="pane pane-sketch" data-testid="sketch" aria-label="2D 도면">
+                {showProjection ? (
+                  <ProjectionView
+                    projection={projection}
+                    plane={projPlane}
+                    onPlaneChange={setProjPlane}
+                    busy={projBusy}
+                    error={projError}
+                    showHidden={showHidden}
+                    onToggleHidden={setShowHidden}
+                  />
+                ) : (
+                  <SketchView
+                    sketch={sketch}
+                    onChangeParam={(k, v) => onNumberChange(k, v)}
+                    highlightParam={highlightParam}
+                    onHoverParam={setHighlightParam}
+                    stale={false}
+                  />
+                )}
+              </section>
+            )}
+            {viewMode !== "sketch" && (
+              <section className="pane viewer" data-testid="viewer" aria-label="3D 뷰어">
+                <Viewer result={result} frameRequest={frameRequest} />
+                <div className="viewer-tools">
+                  <button className="btn" type="button" onClick={() => setFrameRequest((n) => n + 1)}>
+                    뷰 맞춤
+                  </button>
+                  <button
+                    className={`btn${cutaway ? " btn-active" : ""}`}
+                    type="button"
+                    aria-pressed={cutaway}
+                    onClick={() => setCutaway((c) => !c)}
+                    data-testid="cutaway"
+                  >
+                    1/4 절개 {cutaway ? "켜짐" : "꺼짐"}
+                  </button>
+                </div>
+                {kernel.kind === "loading" && <div className="overlay">커널(wasm) 로딩 중… (약 23 MB)</div>}
+                {kernel.kind === "ready" && gen.kind === "generating" && !result && <div className="overlay">생성 중…</div>}
+                {result && cutaway && !stale && !result.cutawayApplied && (
+                  <div className="viewer-hint">절개 불리언이 실패해 전체 모델을 표시합니다</div>
+                )}
+              </section>
+            )}
+          </div>
+        </div>
 
         <aside className={`panel${panelOpen ? "" : " panel-collapsed"}`} aria-label="파라미터 패널">
           <button
@@ -255,8 +383,20 @@ export default function App() {
               onExport={(k) => void exportFile(k)}
               stale={stale}
             />
+            <FeatureTree
+              valvePockets={params.valvePockets}
+              drainHoles={params.drainHoles}
+              failedStep={failedStep}
+              chamferApplied={result?.chamferApplied ?? true}
+              selected={selectedFeature}
+              onSelect={setSelectedFeature}
+              onToggle={onBooleanChange}
+            />
             <ParamPanel
               params={params}
+              highlightParam={highlightParam}
+              featureParams={featureParams}
+              onHoverParam={setHighlightParam}
               onNumberChange={onNumberChange}
               onBooleanChange={onBooleanChange}
               onReset={onReset}

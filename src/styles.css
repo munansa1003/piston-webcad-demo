@@ -354,3 +354,352 @@ body {
     grid-template-columns: 1fr 76px 40px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   2D 스케치 뷰 · 피처 트리 (A경로: 도면 ↔ 3D 연동)
+   --------------------------------------------------------------------------- */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+.stage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex: 0 0 auto;
+}
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.seg {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 4px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.seg + .seg {
+  border-left: 1px solid var(--border);
+}
+.seg-on {
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+.stage-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pane {
+  position: relative;
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 0;
+}
+.pane + .pane {
+  border-left: 1px solid var(--border);
+}
+.pane-sketch {
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.sketch-host {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 6px 8px 0;
+}
+.sketch-stale {
+  opacity: 0.6;
+}
+.sketch-svg {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  color: var(--fg);
+}
+.sketch-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 2px 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.sketch-hint {
+  font-style: italic;
+}
+.sketch-edit {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 3px 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  z-index: 3;
+}
+.sketch-edit input {
+  font: inherit;
+  width: 84px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  text-align: right;
+}
+.sketch-edit-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* 도면 선 종류 */
+.sk-outline {
+  stroke: var(--fg);
+}
+.sk-hidden {
+  stroke: var(--muted);
+  opacity: 0.85;
+}
+.sk-center {
+  stroke: var(--accent);
+  opacity: 0.65;
+}
+.sk-construction {
+  stroke: var(--muted);
+  opacity: 0.5;
+}
+.sk-fill {
+  color: var(--fg);
+}
+.sk-dim {
+  stroke: var(--muted);
+  fill: none;
+  color: var(--muted);
+}
+.sk-dim-text {
+  fill: var(--fg);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-linejoin: round;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.sk-dim-editable:hover,
+.sk-dim-active {
+  stroke: var(--accent);
+  color: var(--accent);
+}
+.sk-dim-editable:hover .sk-dim-text,
+.sk-dim-active .sk-dim-text {
+  fill: var(--accent);
+  font-weight: 700;
+}
+.sk-dim-editing {
+  stroke: var(--accent);
+  color: var(--accent);
+}
+.sk-dim:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+/* 피처 트리 */
+.tree {
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tree-root {
+  padding: 7px 12px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.tree-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  padding: 4px 12px 4px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.tree-node:hover {
+  background: var(--bg);
+}
+.tree-node-sel {
+  background: var(--bg);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.tree-node-off {
+  opacity: 0.5;
+}
+.tree-node-fail {
+  color: var(--warn);
+  font-weight: 700;
+}
+.tree-node-after {
+  opacity: 0.4;
+}
+.tree-idx {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--fg);
+  font-size: 0.72rem;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+.tree-node-sel .tree-idx {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.tree-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.tree-kind {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.tree-badge {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.tree-badge-fail {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.tree-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 4px 40px;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.tree-toggle input {
+  accent-color: var(--accent);
+}
+.tree-detail {
+  padding: 4px 12px 8px 40px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.tree-detail-warn {
+  color: var(--warn);
+  font-family: inherit;
+  margin-top: 2px;
+}
+.tree-note {
+  margin: 0;
+  padding: 6px 12px 8px;
+  font-size: 0.74rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* 파라미터 행 강조 (도면 ↔ 패널 연동) */
+.param-row-hot {
+  background: var(--bg);
+  box-shadow: inset 3px 0 0 var(--accent);
+  border-radius: 4px;
+}
+.param-row-feature {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.param-row-dim {
+  opacity: 0.42;
+}
+
+/* 모바일: 2D + 3D 를 세로로 */
+@media (max-width: 899px) {
+  .stage-body {
+    flex-direction: column;
+  }
+  .pane {
+    flex: 0 0 auto;
+    height: 42vh;
+    min-height: 240px;
+  }
+  .pane + .pane {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* 투상도 */
+.proj-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px 6px;
+}
+.proj-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.proj-check input {
+  accent-color: var(--accent);
+}
+.proj-empty {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  min-height: 0;
+}
+.proj-stat {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.sketch-host:has(.proj-bar) {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
