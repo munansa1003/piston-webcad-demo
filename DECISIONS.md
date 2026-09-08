@@ -69,3 +69,26 @@
 - **블레이드 메시 비용 (공차별).** 0.05 → 1,615 ms / 삼각형 88,416개, 0.1 → 708 ms / 54,364개, 0.3 → 289 ms / 24,872개, 1.0 → 149 ms / 10,896개.
 - **블레이드 24장 STEP**: 923 ms, 3,000,304자, `PRODUCT` 24개, `NEXT_ASSEMBLY_USAGE_OCCURRENCE` 0개 (역시 평면 구조).
 - 정정된 결론: 블레이드의 **몸통 형상은 도달 가능**하지만, **루트 필렛과 G2 곡면 품질은 이 스택에서 도달 불가**다. 서피싱은 "된다"가 아니라 "형상은 되고 품질과 마무리는 안 된다"로 읽어야 한다.
+
+## 서피싱 정정 — G2 는 도달 가능하다 (앞 절의 "G2 불가" 를 바로잡음)
+- **원인은 `ThruSections` 가 아니라 단면 곡선의 차수였다.** replicad `make2dInerpolatedBSplineCurve` 의 기본값이 `degMin=1, degMax=3, tolerance=1e-3` 이고, `Geom2dAPI_PointsToBSpline.Init(pnts, degMin, degMax, GeomAbs_C2, tol)` 에 그대로 넘어간다 (`node_modules/replicad/dist/replicad.js:601,614`). 익형 좌표는 촘촘해서 **차수 1(폴리라인)로도 1e-3 을 만족**하므로 "BSPLINE_CURVE" 라는 이름만 남고 실제로는 꺾인 선이 된다.
+- **실측 (같은 9단면 블레이드, `loft(..., {ruled:false})`)**: `{tolerance:1e-3}`(기본) → Udeg=1 · nUPoles=107 · `GeomAbs_C0` · `IsCNu(1)=false`. 공차만 조여도(`1e-6`) → 여전히 Udeg=1 · C0. **`{tolerance:1e-6, degMax:5}` → Udeg=3 · Vdeg=7 · nUPoles=123 · `GeomAbs_C2` · `IsCNu(2)=true` · `IsCNv(2)=true`, 로프트 17 ms, valid=true.** `{tolerance:1e-3, degMin:3}` 로도 C2 가 나온다 (Udeg=3, 227 poles). 체적은 46,715~46,943 mm³ 로 0.5 % 안에서 움직인다.
+- 즉 곡률연속(G2) 블레이드는 이 스택에서 **설정 한 줄**로 나온다. 반대로 아무 설정 없이 쓰면 "보기엔 매끈하지만 접선연속조차 아닌" 곡면이 나오는데 뷰어·메시·STEP 어디에서도 경고가 없다 — 서피싱 도구를 만든다면 `Continuity()`/`IsCNu` 를 읽어 사용자에게 표시해야 한다.
+- 앞 절의 "`SetContinuity(C1/C2)` 를 줘도 안 바뀐다" 는 관찰 자체는 맞다. OCCT 는 `UseSmoothing` 이 켜졌을 때만 그 값을 쓰고, 켜면 15 ms → 2.3~5.2 s 가 된다. 정답은 스무딩이 아니라 입력 곡선 차수다.
+- **루트 필렛은 여전히 불가 — C2 로 만들어도 마찬가지다.** C2 블레이드를 허브에 fuse 하는 것은 788 ms · 면 5개 · valid=true 로 되고 루트 모서리는 `BSPLINE_CURVE` 1개로 깨끗하게 잡힌다. 그러나 그 모서리에 `fillet(0.5)` 는 **110 초 안에 반환되지 않았다** (C0 블레이드에서는 1.2~11.1 s 뒤 예외). 던지느냐 매달리느냐만 달라진다.
+- `loft` 의 replicad 기본값은 `ruled = true` 다. 블레이드는 반드시 `{ruled:false}` 로 불러야 한다.
+
+### 위 정정을 직접 재현 확인 (독립 검증)
+같은 9단면 블레이드, `loft(..., {ruled:false})`, `BRepAdaptor_Surface` 로 U 방향 차수와 연속성을 읽음:
+
+| `drawPointsInterpolation` 설정 | 로프트 | U 차수 | U 연속성 | 체적 |
+|---|---|---|---|---|
+| 기본값 | 85 ms | 1 | `GeomAbs_C0` | 368,870 mm³ |
+| `{tolerance: 1e-6}` | 38 ms | 3 | `GeomAbs_C2` | 364,930 mm³ |
+| `{tolerance: 1e-6, degMax: 5}` | 35 ms | 3 | `GeomAbs_C2` | 371,415 mm³ |
+| `{degMin: 3}` | 34 ms | 3 | `GeomAbs_C2` | 364,930 mm³ |
+
+- 기본값의 U 차수가 **1** 이라는 것이 핵심이다. 이름은 BSPLINE 이지만 실제로는 꺾인 선이라 곡률이 정의되지 않는다.
+- `degMin: 3` 한 줄이면 C2 가 나오고 로프트는 오히려 빨라진다 (85 → 34 ms).
+- 체적이 1 % 남짓 달라진다. 기본값 쪽이 현(chord) 근사라 값이 다른 것이므로, **차수 설정은 품질 옵션이 아니라 형상 정의의 일부**로 다뤄야 한다.
+- 결론: 이 스택에서 **G2 곡면은 도달 가능**하다. 앞 절의 "G2 불가" 는 취소한다. 단 **루트 필렛 불가는 그대로**이며 (C2 블레이드에서도 `fillet(0.5)` 가 110 초 내 미반환), 서피싱의 진짜 벽은 곡면 품질이 아니라 필렛·수선 계열이다.
