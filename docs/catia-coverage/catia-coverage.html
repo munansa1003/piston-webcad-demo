@@ -1,0 +1,887 @@
+<title>웹 CAD는 CATIA를 얼마나 대신할까</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f3f5f9;
+    --surface: #ffffff;
+    --surface-2: #eaeef4;
+    --ink: #1b2430;
+    --ink-2: #465262;
+    --muted: #5f6b7a;
+    --border: #d6dce4;
+    --grid: #e2e7ee;
+    --neutral: #9aa5b2;
+    --ok: #1baf7a;
+    --ok-soft: #cdeedf;
+    --part: #eda100;
+    --part-soft: #fbe9bf;
+    --no: #e34948;
+    --no-soft: #f9d6d5;
+    --cat: #2a78d6;
+    --cat-soft: #cfe0f6;
+    --focus: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #121820;
+      --surface: #1a212b;
+      --surface-2: #232c37;
+      --ink: #e8edf3;
+      --ink-2: #b8c2cd;
+      --muted: #95a1ae;
+      --border: #333d49;
+      --grid: #2a333e;
+      --neutral: #6c7886;
+      --ok: #199e70;
+      --ok-soft: #173c2f;
+      --part: #c98500;
+      --part-soft: #3e2e0c;
+      --no: #e66767;
+      --no-soft: #472322;
+      --cat: #3987e5;
+      --cat-soft: #1d3452;
+      --focus: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121820;
+    --surface: #1a212b;
+    --surface-2: #232c37;
+    --ink: #e8edf3;
+    --ink-2: #b8c2cd;
+    --muted: #95a1ae;
+    --border: #333d49;
+    --grid: #2a333e;
+    --neutral: #6c7886;
+    --ok: #199e70;
+    --ok-soft: #173c2f;
+    --part: #c98500;
+    --part-soft: #3e2e0c;
+    --no: #e66767;
+    --no-soft: #472322;
+    --cat: #3987e5;
+    --cat-soft: #1d3452;
+    --focus: #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .page { max-width: 900px; margin: 0 auto; padding-inline: 18px; padding-block: 0 72px; }
+  .disp { font-family: "Do Hyeon", "Noto Sans KR", sans-serif; font-weight: 400; letter-spacing: 0.01em; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .big { font-family: "Noto Sans KR", system-ui, sans-serif; font-weight: 700; line-height: 1.1; }
+  h1, h2, h3 { text-wrap: balance; }
+  p { margin: 0; }
+
+  /* 상단 바 */
+  .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 10px; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); }
+  .brand { font-size: 13.5px; color: var(--muted); }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); flex: 0 0 auto; }
+  .seg button { font: inherit; font-size: 14px; padding: 5px 14px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--cat); color: #fff; font-weight: 700; }
+
+  /* 첫 화면 */
+  .hero { display: grid; gap: 18px; padding-block: 22px 8px; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.08em; color: var(--muted); }
+  .hero h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.2; margin: 0; }
+  .answer { display: grid; grid-template-columns: auto 1fr; gap: 6px 22px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 22px; }
+  .answer .q { grid-column: 1 / -1; font-size: 15px; color: var(--muted); }
+  .answer .a { font-size: 64px; }
+  .answer .prob { display: grid; gap: 4px; }
+  .answer .prob .p1 { font-size: 17px; font-weight: 700; }
+  .answer .prob .p2 { font-size: 15px; color: var(--ink-2); }
+  @media (max-width: 520px) { .answer { grid-template-columns: 1fr; } .answer .a { font-size: 52px; } }
+  .reasons { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .reason { display: grid; gap: 6px; align-content: start; padding: 14px 16px; border-radius: 12px; background: var(--surface-2); }
+  .reason .t { font-weight: 700; font-size: 15.5px; }
+  .reason .p { font-size: 14.5px; color: var(--ink-2); }
+  .oneline { font-size: 17.5px; font-weight: 500; padding: 14px 18px; border-radius: 12px; background: var(--cat-soft); color: var(--ink); }
+
+  /* 섹션 */
+  section { display: grid; gap: 14px; margin-block: 52px 0; }
+  .sh { display: flex; align-items: baseline; gap: 12px; }
+  .sh .n { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-size: 17px; }
+  .sh h2 { font-size: clamp(23px, 4.4vw, 28px); line-height: 1.3; margin: 0; }
+  .sh .tag { font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; }
+  .lead { color: var(--ink-2); max-width: 66ch; font-size: 16.5px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .note { font-size: 13.5px; color: var(--muted); }
+  .detail { display: none; font-size: 13.5px; color: var(--ink-2); background: var(--surface-2); border-radius: 8px; padding: 8px 12px; }
+  body.detailed .detail { display: block; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 1px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; border: 1px solid var(--border); background: var(--surface); color: var(--ink); white-space: nowrap; }
+  .chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--neutral)); flex: 0 0 auto; }
+  .c-ok { --c: var(--ok); } .c-part { --c: var(--part); } .c-no { --c: var(--no); } .c-cat { --c: var(--cat); } .c-neu { --c: var(--neutral); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13.5px; color: var(--ink-2); }
+  .key { display: inline-flex; align-items: center; gap: 6px; }
+  .key i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; background: var(--k); }
+  .conf { display: inline-block; font-size: 11.5px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+
+  /* 표 보기 */
+  details.tv { font-size: 14px; }
+  details.tv summary { cursor: pointer; color: var(--ink-2); font-size: 13.5px; width: fit-content; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
+  th { font-size: 12px; letter-spacing: 0.04em; color: var(--muted); background: var(--surface-2); white-space: nowrap; font-weight: 500; }
+  td.r, th.r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* 네 가지 자 */
+  .rulers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 14px; }
+  .ruler { display: grid; gap: 10px; align-content: start; }
+  .ruler h3 { margin: 0; font-size: 18px; }
+  .ruler .rq { font-size: 14px; color: var(--muted); }
+  .rrows { display: grid; gap: 4px; }
+  .rrow { display: grid; grid-template-columns: minmax(92px, 30%) 1fr 76px; gap: 2px 10px; align-items: center; padding-block: 3px; border-radius: 6px; }
+  .rrow:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .rwho { font-size: 13.5px; line-height: 1.35; }
+  .rval { font-size: 14px; font-weight: 700; text-align: right; line-height: 1.2; }
+  .rnote { grid-column: 1 / -1; }
+  .track { position: relative; height: 22px; }
+  .track .base { position: absolute; left: 0; right: 0; top: 10px; height: 1px; background: var(--grid); }
+  .track .g50 { position: absolute; left: 50%; top: 3px; bottom: 3px; width: 1px; background: var(--grid); }
+  .track .bar { position: absolute; left: 0; top: 5px; height: 12px; border-radius: 0 4px 4px 0; background: var(--cat); min-width: 2px; }
+  .track .bar.goal { background: var(--neutral); }
+  .track .bar.now { background: var(--cat-soft); box-shadow: inset 0 0 0 2px var(--cat); }
+  .track .wh { position: absolute; top: 10px; height: 2px; background: var(--ink-2); }
+  .track .wh::before, .track .wh::after { content: ""; position: absolute; top: -4px; width: 2px; height: 10px; background: var(--ink-2); }
+  .track .wh::before { left: 0; } .track .wh::after { right: 0; }
+  .axis { display: grid; grid-template-columns: minmax(92px, 30%) 1fr 76px; gap: 0 10px; font-size: 11.5px; color: var(--muted); }
+  .axis .ticks { display: flex; justify-content: space-between; }
+  .rplain { font-size: 14.5px; color: var(--ink-2); }
+  @media (max-width: 520px) {
+    .rrow { grid-template-columns: 1fr 70px; }
+    .rrow .rwho { grid-column: 1 / -1; }
+    .axis { grid-template-columns: 1fr 70px !important; }
+    .axis > span:first-child { display: none; }
+  }
+
+  /* 작업실 100개 */
+  .dots { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 5px; max-width: 540px; }
+  .dot { aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: var(--grid); }
+  .dot.d1 { background: var(--cat); }
+  .dot.d2 { background: var(--cat-soft); box-shadow: inset 0 0 0 2px var(--cat); }
+  .names { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* 엔진 */
+  .strip { position: relative; height: 34px; border-radius: 8px; background: var(--grid); }
+  .strip .fill { position: absolute; inset: 0 auto 0 0; background: var(--ok); border-radius: 8px 0 0 8px; }
+  .strip .swh { position: absolute; top: 16px; height: 2px; background: var(--ink); }
+  .strip .swh::before, .strip .swh::after { content: ""; position: absolute; top: -5px; width: 2px; height: 12px; background: var(--ink); }
+  .strip .swh::before { left: 0; } .strip .swh::after { right: 0; }
+  .pyrows { display: grid; gap: 6px; }
+  .pyrow { display: grid; grid-template-columns: 150px 1fr 150px; gap: 10px; align-items: center; font-size: 13.5px; }
+  .pyrow .track .bar { border-radius: 4px; }
+  @media (max-width: 560px) { .pyrow { grid-template-columns: 1fr; gap: 2px; } .pyrow .mono { justify-self: start; } }
+
+  /* 작업실 점수 */
+  .wgroup { display: grid; gap: 8px; }
+  .wgroup h3 { margin: 6px 0 0; font-size: 17px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .wgroup h3 .w { font-size: 13.5px; color: var(--muted); font-weight: 400; }
+  .wrow { display: grid; grid-template-columns: 180px 1fr 124px; gap: 4px 14px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
+  .wrow:hover, .wrow:focus-visible { border-color: var(--cat); outline: none; }
+  .wname { font-weight: 700; font-size: 15px; line-height: 1.35; }
+  .wname .wt { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+  .wlab { font-size: 13px; text-align: right; line-height: 1.35; }
+  .wlab b { font-size: 15px; }
+  .wmeta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .wplain { grid-column: 1 / -1; font-size: 14px; color: var(--ink-2); }
+  .wdetail { grid-column: 1 / -1; }
+  .btrack { position: relative; height: 26px; }
+  .btrack .base { position: absolute; left: 0; right: 0; top: 7px; height: 12px; border-radius: 0 4px 4px 0; background: var(--grid); }
+  .btrack .mat { position: absolute; left: 0; top: 7px; height: 12px; border-radius: 0 4px 4px 0; }
+  .btrack .tod { position: absolute; left: 0; top: 7px; height: 12px; border-radius: 0 4px 4px 0; min-width: 2px; }
+  .btrack .wh { position: absolute; top: 2px; height: 2px; background: var(--ink-2); }
+  .btrack .wh::before, .btrack .wh::after { content: ""; position: absolute; top: -3px; width: 2px; height: 8px; background: var(--ink-2); }
+  .btrack .wh::before { left: 0; } .btrack .wh::after { right: 0; }
+  .m-ok { background: var(--ok-soft); } .m-part { background: var(--part-soft); } .m-no { background: var(--no-soft); }
+  .t-ok { background: var(--ok); } .t-part { background: var(--part); } .t-no { background: var(--no); }
+  @media (max-width: 640px) { .wrow { grid-template-columns: 1fr; } .wlab { text-align: left; } }
+  .buildall { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .stat { display: grid; gap: 2px; align-content: start; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); }
+  .stat .v { font-size: 28px; }
+  .stat .k { font-size: 13px; color: var(--muted); }
+
+  /* 벽 */
+  .walls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+  .wall { display: grid; gap: 8px; align-content: start; }
+  .wall h3 { margin: 0; font-size: 17.5px; }
+  .wall .an { font-size: 14.5px; color: var(--ink-2); }
+  .wall .mo { font-size: 13px; color: var(--muted); }
+
+  /* 좌석 */
+  .seatgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .seatgrid { grid-template-columns: 1fr; } }
+  .srow { display: grid; grid-template-columns: 1fr 64px; gap: 2px 10px; align-items: center; padding-block: 6px; border-bottom: 1px solid var(--grid); }
+  .srow:last-child { border-bottom: 0; }
+  .srow .t { font-weight: 700; font-size: 14.5px; }
+  .srow .t .s { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+  .srow .v { text-align: right; font-weight: 700; }
+  .srow .p { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); }
+  .srow .p .chip { margin-right: 6px; }
+  .srow .track { grid-column: 1 / -1; }
+  .waffle { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; max-width: 360px; }
+  .cell { aspect-ratio: 1; max-width: 100%; border-radius: 4px; background: var(--grid); }
+  .cell.a { background: var(--ok); } .cell.b { background: var(--part); }
+  .funnel { display: grid; gap: 8px; }
+  .fstep { display: grid; grid-template-columns: 86px 1fr; gap: 10px; align-items: baseline; }
+  .fstep .v { font-size: 24px; }
+  .fstep .k { font-size: 13.5px; color: var(--ink-2); }
+
+  /* 가격 */
+  .prow { display: grid; grid-template-columns: 150px 1fr 104px; gap: 10px; align-items: center; padding-block: 3px; }
+  .prow .nm { font-size: 13.5px; line-height: 1.3; }
+  .prow .nm b { font-weight: 700; }
+  .prow .lb { font-size: 13px; text-align: right; line-height: 1.25; }
+  .prow .lb b { font-size: 14px; }
+  .prow .track .rng { position: absolute; top: 6px; height: 10px; border-radius: 4px; min-width: 4px; }
+  .prow .track .mid { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; border: 2px solid var(--surface); }
+  .k-catia { background: var(--cat); } .k-rival { background: var(--neutral); } .k-free { background: var(--neutral); } .k-ours { background: var(--ink); }
+  .paxis { display: grid; grid-template-columns: 150px 1fr 104px; gap: 10px; font-size: 11.5px; color: var(--muted); }
+  .paxis .ticks { position: relative; height: 16px; }
+  .paxis .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  @media (max-width: 560px) { .prow, .paxis { grid-template-columns: 96px 1fr 84px; gap: 8px; } }
+
+  /* 돈 */
+  .mgroups { display: grid; gap: 18px; }
+  .mgroup h3 { margin: 0 0 8px; font-size: 16.5px; }
+  .tiles { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 480px) { .tiles { grid-template-columns: 1fr; } }
+  .tile { display: grid; gap: 4px; align-content: start; padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+  .tile .k { font-size: 13px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tile .v { font-size: 24px; }
+  .tile .r { font-size: 12.5px; color: var(--muted); }
+  .tile .p { font-size: 14px; color: var(--ink-2); }
+
+  /* 매출 */
+  .biz { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px; }
+  .capt { display: grid; gap: 8px; }
+  .capt .row { display: grid; grid-template-columns: 1fr; gap: 2px; }
+  .capt .row .k { font-size: 13.5px; color: var(--ink-2); }
+  .capt .bar2 { height: 16px; border-radius: 0 4px 4px 0; }
+  .odds { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; max-width: 320px; }
+  .odds i { display: block; width: 100%; aspect-ratio: 1; max-width: 100%; border-radius: 50%; background: var(--grid); }
+  .odds i.on { background: var(--ok); }
+  .eq { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; font-size: 15px; }
+  .eq b { font-size: 22px; }
+
+  /* 선례 */
+  .tl { display: grid; gap: 10px; }
+  .tlrow { display: grid; grid-template-columns: 170px 1fr; gap: 12px; }
+  .tlrow .who { font-weight: 700; line-height: 1.35; }
+  .tlrow .meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .tlrow .out { font-size: 14.5px; }
+  .tlrow .les { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
+  @media (max-width: 600px) { .tlrow { grid-template-columns: 1fr; } }
+
+  /* 판정 */
+  .verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+  .vcard { display: grid; gap: 8px; align-content: start; }
+  .vcard .q { font-size: 14px; color: var(--muted); }
+  .vcard .a { font-size: 19px; font-weight: 700; line-height: 1.45; }
+  .vcard .rb { font-size: 13.5px; color: var(--ink-2); background: var(--surface-2); border-radius: 8px; padding: 8px 12px; }
+  .vcard.reco { grid-column: 1 / -1; }
+  .plan { display: grid; gap: 8px; counter-reset: st; margin: 4px 0 0; padding: 0; list-style: none; }
+  .plan li { display: grid; grid-template-columns: 28px 120px 1fr; gap: 10px; align-items: baseline; font-size: 14.5px; }
+  .plan li::before { counter-increment: st; content: counter(st); width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+  .plan li .when { font-weight: 700; }
+  @media (max-width: 560px) { .plan li { grid-template-columns: 28px 1fr; } .plan li .what { grid-column: 2; } }
+
+  /* 용어 */
+  .gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 8px 18px; margin: 0; }
+  .gloss div { padding-block: 8px; border-bottom: 1px solid var(--grid); }
+  .gloss dt { font-weight: 700; font-size: 14.5px; }
+  .gloss dd { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+
+  /* 신뢰 */
+  .trust { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 720px) { .trust { grid-template-columns: 1fr; } }
+  .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center; font-size: 13.5px; }
+  .flow .box { background: var(--surface-2); border-radius: 10px; padding: 10px 6px; }
+  .flow .box b { display: block; font-size: 22px; }
+  .ring { position: relative; width: 168px; height: 168px; margin: 14px auto 0; }
+  .ring svg { width: 100%; height: 100%; display: block; }
+  .ring .c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .ring .c b { font-size: 34px; }
+  .ring .c span { font-size: 12.5px; color: var(--muted); }
+  .trow { display: grid; grid-template-columns: minmax(120px, 42%) 1fr 70px; gap: 10px; align-items: center; padding-block: 3px; font-size: 13.5px; }
+  .trow .track .bar { border-radius: 4px; }
+  .trow .v { text-align: right; font-weight: 700; }
+  .claims summary { cursor: pointer; font-weight: 700; }
+  .cl { padding-block: 8px; border-bottom: 1px dashed var(--border); font-size: 13.5px; }
+  .cl .m { color: var(--muted); font-size: 12.5px; }
+
+  .tooltip { position: fixed; z-index: 10; pointer-events: none; background: var(--ink); color: var(--bg); padding: 8px 10px; border-radius: 6px; font-size: 13px; line-height: 1.45; max-width: 320px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+  .tooltip b { display: block; margin-bottom: 2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  footer { margin-top: 52px; font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+</style>
+
+<div class="page">
+  <div class="topbar">
+    <div class="brand">피스톤 WebCAD 프로젝트 · 검토 보고서</div>
+    <div class="seg" role="group" aria-label="설명 수준">
+      <button type="button" id="mode-easy" aria-pressed="true">쉬운 설명</button>
+      <button type="button" id="mode-detail" aria-pressed="false">자세한 근거</button>
+    </div>
+  </div>
+
+  <header class="hero" id="hero">
+    <p class="eyebrow">CATIA V5 대체 가능성 · 독립 검증을 통과한 숫자만 사용</p>
+    <h1 class="disp">웹 CAD는 CATIA를 얼마나 대신할 수 있을까?</h1>
+    <div class="answer" id="answer"></div>
+    <div class="reasons" id="reasons"></div>
+    <p class="oneline" id="oneline"></p>
+  </header>
+
+  <section id="rulers-sec">
+    <div class="sh"><span class="n disp">1</span><h2 class="disp">그럼 얼마나? 네 가지 자로 재 봤어요</h2></div>
+    <p class="lead">"얼마나"는 무엇으로 재느냐에 따라 달라요. 그래서 자를 네 개 준비했어요. 각 줄의 막대는 가운데 값이고, 가는 선은 가능한 범위예요. 모든 자는 0에서 100%까지 같은 눈금이에요.</p>
+    <div class="legend">
+      <span class="key" style="--k: var(--cat-soft); box-shadow: none"><i style="box-shadow: inset 0 0 0 2px var(--cat)"></i>지금 데모</span>
+      <span class="key" style="--k: var(--cat)"><i></i>팀이 몇 년 만들면</span>
+      <span class="key" style="--k: var(--neutral)"><i></i>비교 기준</span>
+    </div>
+    <div class="rulers" id="rulers"></div>
+    <details class="tv"><summary>표로 보기</summary><div class="tablewrap"><table id="rulers-table"><thead><tr><th>자</th><th>누가</th><th class="r">값</th><th class="r">범위</th></tr></thead><tbody></tbody></table></div></details>
+  </section>
+
+  <section id="daily-sec">
+    <div class="sh"><span class="n disp">2</span><h2 class="disp">CATIA는 작업실이 100개쯤 있는 큰 공장이에요</h2></div>
+    <p class="lead">CATIA에서는 기능 묶음을 "워크벤치"라고 불러요. 작업실이라고 생각하면 돼요. 그런데 엔진 부품 설계자가 매일 들어가는 작업실은 몇 개 안 돼요.</p>
+    <div class="card" style="display:grid;gap:12px">
+      <div class="dots" id="dots" role="img"></div>
+      <div class="legend" id="dots-legend"></div>
+      <div class="names" id="dots-names"></div>
+      <p class="rplain" id="dots-plain"></p>
+    </div>
+  </section>
+
+  <section id="kernel-sec">
+    <div class="sh"><span class="n disp">3</span><h2 class="disp">가장 어려운 엔진은 공짜로 받았어요</h2></div>
+    <p class="lead">CAD 프로그램에서 제일 만들기 어려운 부분은 모양을 계산하는 "커널"이에요. 자동차로 치면 엔진이에요. 이 프로젝트는 OpenCascade라는 커널을 공짜로 받아 브라우저에서 돌려요. 그래도 CATIA 전체 일에서 덜어 주는 몫은 생각보다 작아요.</p>
+    <div class="card" style="display:grid;gap:14px">
+      <div class="pyrows" id="py"></div>
+      <div class="strip" id="strip"></div>
+      <div class="legend" id="strip-legend"></div>
+      <p class="rplain" id="kernel-plain"></p>
+    </div>
+  </section>
+
+  <section id="wb-sec">
+    <div class="sh"><span class="n disp">4</span><h2 class="disp">작업실마다 점수를 매겼어요</h2></div>
+    <p class="lead">진한 막대는 오늘 데모 앱이 하는 몫, 연한 막대는 그 작업실 하나를 끝까지 만들었을 때 닿을 수 있는 몫이에요. 끝까지 만들 때 드는 시간이 작업실마다 따로 붙어 있어요. 피스톤 설계자가 하루에 많이 쓰는 작업실부터 보여 줘요.</p>
+    <div class="legend">
+      <span class="key" style="--k: var(--ok)"><i></i>오늘</span>
+      <span class="key" style="--k: var(--ok-soft)"><i></i>끝까지 만들면 (상한)</span>
+      <span class="chip c-ok">70% 이상 · 거의 된다</span>
+      <span class="chip c-part">30~69% · 절반쯤</span>
+      <span class="chip c-no">30% 미만 · 사실상 안 된다</span>
+    </div>
+    <div id="wb" style="display:grid;gap:18px"></div>
+    <div class="card" style="display:grid;gap:12px">
+      <h3 style="margin:0;font-size:17px">작업실을 전부 끝까지 만들면</h3>
+      <div class="buildall" id="buildall"></div>
+      <p class="rplain" id="buildall-plain"></p>
+    </div>
+    <details class="tv"><summary>표로 보기</summary><div class="tablewrap"><table id="wb-table"><thead><tr><th>작업실</th><th class="r">하루 비중</th><th class="r">오늘</th><th class="r">끝까지</th><th class="r">범위</th><th>방식</th><th>걸리는 시간</th></tr></thead><tbody></tbody></table></div></details>
+  </section>
+
+  <section id="walls-sec">
+    <div class="sh"><span class="n disp">5</span><h2 class="disp">막힌 벽은 이것이에요</h2></div>
+    <p class="lead">점수가 낮은 곳은 대부분 아래 벽 중 하나에 막혀 있어요. 시간을 들이면 넘는 벽도 있고, 기술로는 못 넘는 벽도 있어요.</p>
+    <div class="walls" id="walls"></div>
+  </section>
+
+  <section id="seats-sec">
+    <div class="sh"><span class="n disp">6</span><h2 class="disp">CATIA 좌석 50개로 따져 보면</h2></div>
+    <p class="lead">회사에 CATIA 자리(좌석)가 50개 있다고 해 볼게요. 새 모양을 그리는 사람, 치수만 고치는 사람, 보고 재는 사람이 섞여 있어요. 막대는 그 사람들 일 중 웹 CAD로 옮길 수 있는 몫이에요.</p>
+    <div class="seatgrid">
+      <div class="card"><div id="seat-rows"></div></div>
+      <div class="card" style="display:grid;gap:14px">
+        <div class="waffle" id="waffle" role="img"></div>
+        <div class="legend" id="waffle-legend"></div>
+        <div class="funnel" id="funnel"></div>
+      </div>
+    </div>
+    <p class="note" id="seat-plain"></p>
+  </section>
+
+  <section id="price-sec">
+    <div class="sh"><span class="n disp">7</span><h2 class="disp">자리 하나, 1년에 얼마?</h2></div>
+    <p class="lead">CATIA가 비싼 건 맞아요. 그런데 웹 CAD가 값을 겨룰 상대는 CATIA가 아니라 이미 싸게 팔리는 다른 프로그램들이에요. 가는 막대는 값의 범위, 점은 대표 값이에요.</p>
+    <div class="card" style="display:grid;gap:6px">
+      <div id="prices"></div>
+      <div class="paxis"><span></span><div class="ticks" id="paxis"></div><span></span></div>
+      <div class="legend" style="margin-top:6px">
+        <span class="key" style="--k: var(--cat)"><i></i>CATIA</span>
+        <span class="key" style="--k: var(--neutral)"><i></i>다른 CAD</span>
+        <span class="key" style="--k: var(--ink)"><i></i>우리 웹 CAD가 받을 수 있는 값</span>
+      </div>
+    </div>
+    <details class="tv"><summary>표로 보기</summary><div class="tablewrap"><table id="price-table"><thead><tr><th>프로그램</th><th class="r">대표 값 (만 원/년)</th><th class="r">범위</th><th>메모</th></tr></thead><tbody></tbody></table></div></details>
+    <div class="mgroups" id="money"></div>
+  </section>
+
+  <section id="biz-sec">
+    <div class="sh"><span class="n disp">8</span><h2 class="disp">고객이 아낀 돈이 내 돈이 되지는 않아요</h2></div>
+    <p class="lead">고객이 CATIA 값을 아끼면 그 돈은 고객 통장에 남아요. 우리가 받는 돈은 우리 프로그램 값뿐이고, 그 값은 이미 있는 싼 프로그램들 시세를 넘기 어려워요.</p>
+    <div class="biz" id="biz"></div>
+    <p class="rplain" id="biz-plain"></p>
+  </section>
+
+  <section id="prec-sec">
+    <div class="sh"><span class="n disp">9</span><h2 class="disp">먼저 해 본 회사들</h2></div>
+    <p class="lead">"CATIA를 대신하는 싼 CAD"는 새 생각이 아니에요. 30년 동안 여러 회사가 해 봤고, 그 결과가 가장 정확한 지도예요.</p>
+    <div class="tl" id="tl"></div>
+  </section>
+
+  <section id="verdict-sec">
+    <div class="sh"><span class="n disp">10</span><h2 class="disp">그래서 답은</h2></div>
+    <div class="verdicts" id="verdicts"></div>
+  </section>
+
+  <section id="gloss-sec">
+    <div class="sh"><span class="tag">부록</span><h2 class="disp">낯선 말 풀이</h2></div>
+    <p class="lead">이 페이지에 자주 나오는 말부터 풀었어요.</p>
+    <dl class="gloss" id="gloss"></dl>
+    <details class="tv" id="gloss-more" hidden><summary>나머지 말 풀이 보기</summary><dl class="gloss" id="gloss-rest" style="margin-top:8px"></dl></details>
+  </section>
+
+  <section id="trust-sec">
+    <div class="sh"><span class="tag">부록</span><h2 class="disp">이 숫자를 얼마나 믿을 수 있나</h2></div>
+    <p class="lead">한 사람이 쓴 보고서는 그 사람의 실수를 그대로 담아요. 그래서 주장을 하나씩 떼어 내고, 서로 모르는 검증자 3명이 각각 "사실이 맞나", "엔진에서 정말 되나", "사업으로 말이 되나"를 따졌어요. 3명 중 2명이 맞다고 해야 통과예요. 떨어진 주장은 고쳐서 다시 검증했어요. 마지막에는 페이지에 들어간 숫자 하나하나를 다시 원래 주장과 대조했어요.</p>
+    <div class="trust">
+      <div class="card">
+        <div class="flow" id="flow"></div>
+        <div class="ring" id="ring"></div>
+        <p class="note" style="text-align:center;margin-top:8px" id="ring-note"></p>
+      </div>
+      <div class="card" style="display:grid;gap:10px">
+        <h3 style="margin:0;font-size:16px">라운드별 결과</h3>
+        <div class="tablewrap" style="margin-top:0"><table id="rounds"><thead><tr><th>라운드</th><th class="r">검증</th><th class="r">통과</th><th class="r">탈락</th><th class="r">누적 통과율</th></tr></thead><tbody></tbody></table></div>
+        <div id="unconfirmed"></div>
+      </div>
+    </div>
+    <div class="card" style="display:grid;gap:10px">
+      <h3 style="margin:0;font-size:16px">숫자 종류마다 확실한 정도가 달라요</h3>
+      <div id="tiers"></div>
+      <p class="rplain" id="trust-plain"></p>
+    </div>
+    <div class="card" id="pagecheck" hidden></div>
+    <details class="claims" id="claims-box">
+      <summary>통과한 주장 전체 보기</summary>
+      <div id="claims"></div>
+    </details>
+  </section>
+
+  <footer>
+    <p>기술 수치는 이 프로젝트의 실제 OpenCascade WASM 빌드에서 코드를 돌려 얻은 것이에요. 가격과 시장 수치는 공개 자료에서 추정한 범위이고, 회사와 시기에 따라 달라요. 원화는 1달러 = 1,350원으로 계산했어요.</p>
+    <p>이 페이지는 기술·사업 타당성 검토예요. 투자 조언이 아니에요.</p>
+  </footer>
+</div>
+<div class="tooltip" id="tip" hidden></div>
+
+<script>
+const PAGE = /*__PAGE__*/null;
+const STATS = /*__STATS__*/null;
+const CLAIMS = /*__CLAIMS__*/null;
+const CHECK = /*__CHECK__*/null;
+
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+
+  // 요소 만들기: 문자열은 항상 textContent 로 넣는다
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    if (props) for (const [k, v] of Object.entries(props)) {
+      if (v == null || v === false) continue;
+      if (k === "class") el.className = v;
+      else if (k === "style") el.setAttribute("style", v);
+      else if (k === "text") el.textContent = v;
+      else el.setAttribute(k, v === true ? "" : String(v));
+    }
+    for (const kid of kids.flat(Infinity)) {
+      if (kid == null || kid === false) continue;
+      el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+    }
+    return el;
+  }
+  const clamp = (v) => Math.max(0, Math.min(100, Number(v) || 0));
+  const fmt = (v) => {
+    const n = Number(v);
+    if (!isFinite(n)) return String(v);
+    return (Math.round(n * 10) / 10).toLocaleString("ko-KR");
+  };
+  const band = (v) => (v >= 70 ? "ok" : v >= 30 ? "part" : "no");
+  const bandName = { ok: "거의 된다", part: "절반쯤", no: "사실상 안 된다" };
+  const confKo = (c) => ({ high: "확신 높음", medium: "확신 보통", low: "확신 낮음" }[c] || c);
+
+  // 설명 수준 토글
+  const setMode = (detailed) => {
+    document.body.classList.toggle("detailed", detailed);
+    $("#mode-easy").setAttribute("aria-pressed", String(!detailed));
+    $("#mode-detail").setAttribute("aria-pressed", String(detailed));
+    try { localStorage.setItem("catia-cov-mode", detailed ? "d" : "e"); } catch (e) {}
+  };
+  $("#mode-easy").addEventListener("click", () => setMode(false));
+  $("#mode-detail").addEventListener("click", () => setMode(true));
+  try { if (localStorage.getItem("catia-cov-mode") === "d") setMode(true); } catch (e) {}
+
+  // 툴팁 (마우스와 키보드 포커스 모두)
+  const tip = $("#tip");
+  const placeTip = (x, y) => {
+    const pad = 14, w = tip.offsetWidth, hgt = tip.offsetHeight;
+    let left = x + pad, top = y + pad;
+    if (left + w > innerWidth - 8) left = Math.max(8, x - w - pad);
+    if (top + hgt > innerHeight - 8) top = Math.max(8, y - hgt - pad);
+    tip.style.left = left + "px"; tip.style.top = top + "px";
+  };
+  const showTip = (x, y, title, lines) => {
+    tip.replaceChildren(h("b", { text: title }), ...lines.filter(Boolean).map((l) => h("div", { text: l })));
+    tip.hidden = false; placeTip(x, y);
+  };
+  const hideTip = () => { tip.hidden = true; };
+  const bindTip = (el, title, lines) => {
+    el.addEventListener("pointermove", (e) => showTip(e.clientX, e.clientY, title, lines));
+    el.addEventListener("pointerleave", hideTip);
+    el.addEventListener("focus", () => { const r = el.getBoundingClientRect(); showTip(r.left + 20, r.bottom - 6, title, lines); });
+    el.addEventListener("blur", hideTip);
+  };
+  addEventListener("scroll", hideTip, { passive: true });
+
+  if (!PAGE) { $("#answer").append(h("p", { text: "데이터가 아직 채워지지 않았어요." })); return; }
+  const P = PAGE;
+
+  // 막대 + 범위선 (0~100% 공통 눈금)
+  function track(value, lo, hi, cls) {
+    const t = h("div", { class: "track" }, h("div", { class: "base" }), h("div", { class: "g50" }));
+    t.append(h("div", { class: "bar" + (cls ? " " + cls : ""), style: `width:${clamp(value)}%` }));
+    if (isFinite(lo) && isFinite(hi) && hi > lo) t.append(h("div", { class: "wh", style: `left:${clamp(lo)}%;width:${clamp(hi) - clamp(lo)}%` }));
+    return t;
+  }
+
+  // ---- 첫 화면: 100% 가능한가
+  const H = P.hundred;
+  $("#answer").append(
+    h("div", { class: "q", text: "100% 똑같이 만들 수 있을까?" }),
+    h("div", { class: "a big", text: H.verdict }),
+    h("div", { class: "prob" }, h("div", { class: "p1", text: `가능할 확률 ${H.probability}` }), h("div", { class: "p2", text: H.short }))
+  );
+  $("#reasons").append(...H.reasons.map((r, i) => h("div", { class: "reason" }, h("div", { class: "t", text: `이유 ${i + 1}. ${r.title}` }), h("div", { class: "p", text: r.plain }))));
+  $("#oneline").textContent = P.oneLine;
+
+  // ---- 네 가지 자
+  const rtBody = $("#rulers-table tbody");
+  $("#rulers").append(...P.rulers.map((R) => {
+    const rows = R.points.map((pt) => {
+      const cls = pt.isGoal ? "goal" : pt.isNow ? "now" : "";
+      const row = h("div", { class: "rrow", tabindex: "0" },
+        h("div", { class: "rwho", text: pt.who }),
+        track(pt.value, pt.lo, pt.hi, cls),
+        h("div", { class: "rval", text: pt.label }),
+        pt.note ? h("div", { class: "detail rnote", text: pt.note }) : null
+      );
+      bindTip(row, `${pt.who} · ${pt.label}`, [`범위 ${fmt(pt.lo)}~${fmt(pt.hi)}%`, pt.note]);
+      rtBody.append(h("tr", {}, h("td", { text: R.title }), h("td", { text: pt.who }), h("td", { class: "r", text: pt.label }), h("td", { class: "r", text: `${fmt(pt.lo)}~${fmt(pt.hi)}%` })));
+      return row;
+    });
+    return h("div", { class: "card ruler" },
+      h("h3", { class: "disp", text: R.title }),
+      h("p", { class: "rq", text: R.question }),
+      h("div", { class: "rrows" }, rows),
+      h("div", { class: "axis" }, h("span"), h("div", { class: "ticks mono" }, h("span", { text: "0" }), h("span", { text: "50" }), h("span", { text: "100%" })), h("span")),
+      h("p", { class: "rplain", text: R.plain }),
+      R.footnote ? h("p", { class: "note", text: R.footnote }) : null
+    );
+  }));
+
+  // ---- 작업실 100개
+  const D = P.daily;
+  const TOTAL = 100;
+  const nDaily = Math.round(D.count);
+  const dots = [];
+  for (let i = 0; i < TOTAL; i++) dots.push(h("div", { class: "dot" + (i < nDaily ? " d1" : "") }));
+  $("#dots").append(...dots);
+  $("#dots").setAttribute("aria-label", `작업실 100개 중 매일 쓰는 것 ${nDaily}개`);
+  $("#dots-legend").append(
+    h("span", { class: "key", style: "--k: var(--cat)" }, h("i"), `매일 들어가는 작업실 ${nDaily}개`),
+    h("span", { class: "key", style: "--k: var(--grid)" }, h("i"), `가끔 또는 거의 안 들어가는 작업실 약 ${TOTAL - nDaily}개`)
+  );
+  $("#dots-names").append(...D.names.map((n) => h("span", { class: "chip c-cat", text: n })));
+  $("#dots-plain").textContent = D.plain;
+
+  // ---- 엔진
+  const K = P.kernel;
+  const pyMax = Math.max(K.catiaHi, K.kernelHi);
+  const pyRow = (name, lo, hi, cls) => h("div", { class: "pyrow" },
+    h("div", { text: name }),
+    (() => { const t = h("div", { class: "track" }, h("div", { class: "base" })); t.append(h("div", { class: "bar " + cls, style: `left:${(lo / pyMax) * 100}%;width:${((hi - lo) / pyMax) * 100}%` })); return t; })(),
+    h("div", { class: "mono", style: "justify-self:end", text: `${lo.toLocaleString("ko-KR")}~${hi.toLocaleString("ko-KR")} 인년` })
+  );
+  $("#py").append(pyRow("CATIA V5 전체", K.catiaLo, K.catiaHi, "k-catia"), pyRow("OpenCascade (공짜)", K.kernelLo, K.kernelHi, "k-rival"));
+  $("#strip").append(h("div", { class: "fill", style: `width:${clamp(K.share)}%` }));
+  if (K.hi > K.lo) $("#strip").append(h("div", { class: "swh", style: `left:${clamp(K.lo)}%;width:${clamp(K.hi) - clamp(K.lo)}%` }));
+  $("#strip-legend").append(
+    h("span", { class: "key", style: "--k: var(--ok)" }, h("i"), `공짜 엔진이 실제로 덜어 준 몫 약 ${fmt(K.share)}% (범위 ${fmt(K.lo)}~${fmt(K.hi)}%)`),
+    h("span", { class: "key", style: "--k: var(--grid)" }, h("i"), `아직 남은 몫 약 ${fmt(100 - K.share)}%`)
+  );
+  $("#strip").setAttribute("role", "img");
+  $("#strip").setAttribute("aria-label", `CATIA 전체 일 중 공짜 엔진이 덜어 준 몫 약 ${fmt(K.share)}% (범위 ${fmt(K.lo)}~${fmt(K.hi)}%)`);
+  $("#kernel-plain").textContent = K.plain;
+
+  // ---- 작업실 점수
+  const wbs = [...P.workbenches];
+  const groups = [
+    { title: "매일 쓰는 작업실", test: (w) => w.weight >= 10 },
+    { title: "가끔 쓰는 작업실", test: (w) => w.weight > 0 && w.weight < 10 },
+    { title: "피스톤 설계에는 거의 안 쓰는 작업실", test: (w) => !(w.weight > 0) },
+  ];
+  const wtBody = $("#wb-table tbody");
+  groups.forEach((g) => {
+    const list = wbs.filter(g.test).sort((a, b) => (b.weight - a.weight) || (b.mature - a.mature));
+    if (!list.length) return;
+    const sum = list.reduce((a, w) => a + (w.weight || 0), 0);
+    const box = h("div", { class: "wgroup" }, h("h3", { class: "disp" }, g.title, h("span", { class: "w", text: sum > 0 ? `피스톤 설계자 하루의 약 ${fmt(sum)}%` : "하루 비중 0%" })));
+    list.forEach((w) => {
+      const b = band(w.mature);
+      const bt = h("div", { class: "btrack" }, h("div", { class: "base" }), h("div", { class: `mat m-${b}`, style: `width:${clamp(w.mature)}%` }));
+      if (w.todayKnown) bt.append(h("div", { class: `tod t-${b}`, style: `width:${clamp(w.today)}%` }));
+      if (w.matureHi > w.matureLo) bt.append(h("div", { class: "wh", style: `left:${clamp(w.matureLo)}%;width:${clamp(w.matureHi) - clamp(w.matureLo)}%` }));
+      const todayTxt = w.todayKnown ? `오늘 ${fmt(w.today)}%` : "오늘 값은 안 쟀어요";
+      const row = h("div", { class: "wrow", tabindex: "0" },
+        h("div", { class: "wname" }, w.name, h("span", { class: "wt", text: w.weight > 0 ? `하루의 ${fmt(w.weight)}%` : "피스톤 설계에서 거의 안 씀" })),
+        bt,
+        h("div", { class: "wlab" }, h("div", { text: todayTxt }), h("div", {}, "끝까지 ", h("b", { text: `${fmt(w.mature)}%` }))),
+        h("div", { class: "wmeta" }, h("span", { class: `chip c-${b}`, text: bandName[b] }), h("span", { class: "chip c-neu", text: w.mode }), h("span", { class: "conf", text: confKo(w.confidence) })),
+        h("p", { class: "wplain", text: w.plain }),
+        h("div", { class: "detail wdetail" }, h("b", { text: "막힌 이유 " }), w.blocker, " · ", h("b", { text: "걸리는 시간 " }), w.months, w.todayNote ? " · " : "", w.todayNote || "")
+      );
+      bindTip(row, `${w.name} · 끝까지 ${fmt(w.mature)}% (${fmt(w.matureLo)}~${fmt(w.matureHi)})`, [todayTxt, `막힌 이유: ${w.blocker}`, `걸리는 시간: ${w.months}`, confKo(w.confidence)]);
+      box.append(row);
+      wtBody.append(h("tr", {},
+        h("td", { text: w.name }), h("td", { class: "r", text: `${fmt(w.weight)}%` }),
+        h("td", { class: "r", text: w.todayKnown ? `${fmt(w.today)}%` : "-" }), h("td", { class: "r", text: `${fmt(w.mature)}%` }),
+        h("td", { class: "r", text: `${fmt(w.matureLo)}~${fmt(w.matureHi)}%` }), h("td", { text: w.mode }), h("td", { text: w.months })));
+    });
+    $("#wb").append(box);
+  });
+  const BA = P.buildAll;
+  $("#buildall").append(
+    h("div", { class: "stat" }, h("div", { class: "v big", text: `약 ${Math.round(BA.monthsLo).toLocaleString("ko-KR")}~${Math.round(BA.monthsHi).toLocaleString("ko-KR")}` }), h("div", { class: "k", text: "인월 (작업실별 개발 기간을 더한 값)" })),
+    h("div", { class: "stat" }, h("div", { class: "v big", text: `약 ${fmt(BA.yearsFor5Lo)}~${fmt(BA.yearsFor5Hi)}년` }), h("div", { class: "k", text: "5명 팀이 쉬지 않고 만들 때" })),
+    h("div", { class: "stat" }, h("div", { class: "v big", text: `약 ${Math.round(BA.weightedMature)}%` }), h("div", { class: "k", text: "그때 피스톤 설계자 하루 일 중 되는 몫" }))
+  );
+  $("#buildall-plain").textContent = BA.plain;
+
+  // ---- 벽
+  const wallCls = { "고칠 수 있음": "ok", "어렵지만 가능": "part", "불확실": "part", "구조적 벽": "no" };
+  $("#walls").append(...P.walls.map((w) => h("div", { class: "card wall" },
+    h("div", {}, h("span", { class: `chip c-${wallCls[w.verdict] || "neu"}`, text: w.verdict })),
+    h("h3", { class: "disp", text: w.name }),
+    h("p", { class: "an", text: w.analogy }),
+    h("p", { class: "mo", text: w.months }),
+    h("div", { class: "detail", text: w.detail })
+  )));
+
+  // ---- 좌석
+  const SE = P.seats;
+  $("#seat-rows").append(...SE.groups.map((g) => {
+    const b = band(g.replace);
+    const seatsRaw = (g.share / 100) * 50;
+    const seatsTxt = Number.isInteger(seatsRaw) ? `${seatsRaw}석` : `${Math.floor(seatsRaw)}~${Math.ceil(seatsRaw)}석`;
+    const row = h("div", { class: "srow", tabindex: "0" },
+      h("div", { class: "t" }, g.type, " ", h("span", { class: "s", text: `50석 중 약 ${seatsTxt} (${fmt(g.share)}%)` })),
+      h("div", { class: "v", text: `${fmt(g.replace)}%` }),
+      (() => { const t = track(g.replace, g.replaceLo, g.replaceHi, ""); t.querySelector(".bar").style.background = `var(--${b})`; return t; })(),
+      h("p", { class: "p" }, h("span", { class: `chip c-${b}`, text: bandName[b] }), g.plain),
+      g.note ? h("div", { class: "detail", style: "grid-column:1/-1", text: g.note }) : null
+    );
+    bindTip(row, `${g.type} · 일의 ${fmt(g.replace)}% (${fmt(g.replaceLo)}~${fmt(g.replaceHi)})`, [`좌석 비율 ${fmt(g.share)}% (${fmt(g.lo)}~${fmt(g.hi)})`, g.note]);
+    return row;
+  }));
+  const nA = Math.round(SE.afterOem.value), nAll = Math.round(SE.wholeSeats.value), nB = Math.max(0, nAll - nA);
+  const cells = [];
+  for (let i = 0; i < 50; i++) cells.push(h("div", { class: "cell" + (i < nA ? " a" : i < nA + nB ? " b" : "") }));
+  $("#waffle").append(...cells);
+  $("#waffle").setAttribute("aria-label", `좌석 50개 중 정말로 없앨 수 있는 자리 약 ${nA}개, 비울 수는 있지만 남는 자리 약 ${nB}개`);
+  $("#waffle-legend").append(
+    h("span", { class: "key", style: "--k: var(--ok)" }, h("i"), `정말로 없앨 자리 약 ${nA}석`),
+    h("span", { class: "key", style: "--k: var(--part)" }, h("i"), `비울 수 있지만 OEM 규칙 때문에 남는 자리 약 ${nB}석`),
+    h("span", { class: "key", style: "--k: var(--grid)" }, h("i"), `CATIA가 계속 필요한 자리 약 ${50 - nAll}석`)
+  );
+  const fstep = (v, k) => h("div", { class: "fstep" }, h("div", { class: "v big", text: v }), h("div", { class: "k", text: k }));
+  $("#funnel").append(
+    fstep(`${fmt(SE.workShare.value)}%`, `${SE.workShare.plain} (범위 ${fmt(SE.workShare.lo)}~${fmt(SE.workShare.hi)}%)`),
+    fstep(`${fmt(SE.wholeSeats.value)}석`, `${SE.wholeSeats.plain} (범위 ${fmt(SE.wholeSeats.lo)}~${fmt(SE.wholeSeats.hi)}석)`),
+    fstep(`${fmt(SE.afterOem.value)}석`, `${SE.afterOem.plain} (범위 ${fmt(SE.afterOem.lo)}~${fmt(SE.afterOem.hi)}석)`)
+  );
+  $("#seat-plain").textContent = SE.plain;
+
+  // ---- 가격
+  const pr = [...P.prices].sort((a, b) => b.mid - a.mid);
+  const pMaxRaw = Math.max(...pr.map((p) => p.hi));
+  const step = pMaxRaw > 1500 ? 500 : pMaxRaw > 600 ? 200 : 100;
+  const pMax = Math.ceil(pMaxRaw / step) * step;
+  const X = (v) => (Math.max(0, v) / pMax) * 100;
+  const manwon = (v) => (v >= 10000 ? `${fmt(v / 10000)}억` : `${Math.round(v).toLocaleString("ko-KR")}만`);
+  const ptBody = $("#price-table tbody");
+  $("#prices").append(...pr.map((p) => {
+    const t = h("div", { class: "track" }, h("div", { class: "base" }));
+    if (p.hi > p.lo) t.append(h("div", { class: `rng k-${p.kind}`, style: `left:${X(p.lo)}%;width:${X(p.hi) - X(p.lo)}%;opacity:0.45` }));
+    t.append(h("div", { class: `mid k-${p.kind}`, style: `left:${X(p.mid)}%` }));
+    const row = h("div", { class: "prow", tabindex: "0" },
+      h("div", { class: "nm" }, p.kind === "ours" ? h("b", { text: p.name }) : p.name),
+      t,
+      h("div", { class: "lb" }, h("b", { text: p.mid === 0 ? "0원" : `${manwon(p.mid)} 원` }), h("div", { class: "note", text: p.hi > p.lo ? `${manwon(p.lo)}~${manwon(p.hi)}` : "" }))
+    );
+    bindTip(row, `${p.name} · 1년에 ${p.mid === 0 ? "0원" : manwon(p.mid) + " 원"}`, [p.hi > p.lo ? `범위 ${manwon(p.lo)}~${manwon(p.hi)} 원` : "", p.note]);
+    ptBody.append(h("tr", {}, h("td", { text: p.name }), h("td", { class: "r", text: Math.round(p.mid).toLocaleString("ko-KR") }), h("td", { class: "r", text: p.hi > p.lo ? `${Math.round(p.lo).toLocaleString("ko-KR")}~${Math.round(p.hi).toLocaleString("ko-KR")}` : "-" }), h("td", { text: p.note })));
+    return row;
+  }));
+  for (let v = 0; v <= pMax; v += step) $("#paxis").append(h("span", { class: "mono", style: `left:${X(v)}%`, text: v === 0 ? "0" : `${v.toLocaleString("ko-KR")}만` }));
+
+  const mg = ["고객 쪽", "만드는 쪽", "사업 쪽"];
+  const mgTitle = { "고객 쪽": "고객 쪽: CATIA에 드는 돈과 아낄 수 있는 돈", "만드는 쪽": "만드는 쪽: 웹 CAD를 만드는 데 드는 돈", "사업 쪽": "사업 쪽: 우리 손에 남는 돈" };
+  mg.forEach((g) => {
+    const list = P.money.filter((m) => m.group === g);
+    if (!list.length) return;
+    $("#money").append(h("div", { class: "mgroup" }, h("h3", { class: "disp", text: mgTitle[g] }),
+      h("div", { class: "tiles", style: `--cols:${list.length === 4 ? 4 : list.length <= 3 ? list.length : 3}` }, list.map((m) => h("div", { class: "tile" },
+        h("div", { class: "k" }, m.item, h("span", { class: "conf", text: confKo(m.confidence) })),
+        h("div", { class: "v big", text: m.short }),
+        h("div", { class: "r", text: m.range }),
+        h("p", { class: "p", text: m.plain })
+      )))));
+  });
+
+  // ---- 매출
+  const BZ = P.business;
+  const capW = Math.min(100, (BZ.revenuePerSeat / BZ.savedPerSeat) * 100);
+  $("#biz").append(
+    h("div", { class: "card capt" },
+      h("h3", { class: "disp", style: "margin:0;font-size:17px", text: "자리 하나, 1년 기준" }),
+      h("div", { class: "row" }, h("div", { class: "k", text: `고객이 아끼는 돈 약 ${fmt(BZ.savedPerSeat)}만 원` }), h("div", { class: "bar2", style: "width:100%;background:var(--cat)" })),
+      h("div", { class: "row" }, h("div", { class: "k", text: `우리가 받는 돈 약 ${fmt(BZ.revenuePerSeat)}만 원` }), h("div", { class: "bar2", style: `width:${capW}%;background:var(--ink)` })),
+      h("p", { class: "rplain", text: `아낀 돈 중 우리 매출이 되는 몫은 약 ${fmt(BZ.capture)}%예요 (범위 ${fmt(BZ.captureLo)}~${fmt(BZ.captureHi)}%).` })
+    ),
+    h("div", { class: "card", style: "display:grid;gap:10px" },
+      h("h3", { class: "disp", style: "margin:0;font-size:17px", text: "5명 회사가 버티려면" }),
+      h("div", { class: "eq" }, h("span", { text: "1년 운영비" }), h("b", { class: "big", text: `약 ${fmt(BZ.yearlyCost)}억 원` })),
+      h("div", { class: "eq" }, h("span", { text: "÷ 자리당" }), h("b", { class: "big", text: `${fmt(BZ.revenuePerSeat)}만 원` })),
+      h("div", { class: "eq" }, h("span", { text: "= 유료 자리" }), h("b", { class: "big", text: `약 ${fmt(BZ.seatsNeeded)}석` })),
+      h("p", { class: "note", text: `범위 ${fmt(BZ.seatsLo)}~${fmt(BZ.seatsHi)}석 · 고객 회사로는 ${BZ.customers}` })
+    ),
+    h("div", { class: "card", style: "display:grid;gap:10px" },
+      h("h3", { class: "disp", style: "margin:0;font-size:17px", text: "3~5년 안에 자리 잡을 확률" }),
+      (() => { const o = h("div", { class: "odds", role: "img", "aria-label": `10번 중 약 ${Math.round(BZ.odds / 10)}번` }); for (let i = 0; i < 10; i++) o.append(h("i", { class: i < Math.round(BZ.odds / 10) ? "on" : "" })); return o; })(),
+      h("div", { class: "eq" }, h("b", { class: "big", text: `약 ${fmt(BZ.odds)}%` }), h("span", { text: `(범위 ${fmt(BZ.oddsLo)}~${fmt(BZ.oddsHi)}%)` })),
+      h("p", { class: "note", text: `버틸 돈 ${BZ.runway}` })
+    )
+  );
+  $("#biz-plain").textContent = BZ.plain;
+
+  // ---- 선례
+  $("#tl").append(...P.precedents.map((p) => h("div", { class: "card tlrow" },
+    h("div", {}, h("div", { class: "who", text: p.name }), h("div", { class: "meta", text: p.years }), h("div", { class: "meta", text: p.team })),
+    h("div", {}, h("p", { class: "out", text: p.outcome }), h("p", { class: "les", text: `배울 점: ${p.lesson}` }))
+  )));
+
+  // ---- 판정 + 계획
+  $("#verdicts").append(...P.verdicts.map((v, i) => {
+    const last = i === P.verdicts.length - 1;
+    const card = h("div", { class: "card vcard" + (last ? " reco" : "") },
+      h("div", { class: "q", text: v.q }),
+      h("p", { class: "a", text: v.short }),
+      h("div", { class: "rb" }, h("b", { text: last ? "이럴 때는 계획을 바꿔요 " : "가장 유리하게 잡아도 " }), v.robust),
+      h("div", { class: "detail", text: v.detail })
+    );
+    if (last && P.plan && P.plan.length) card.append(h("ol", { class: "plan" }, P.plan.map((s) => h("li", {}, h("span", { class: "when", text: s.when }), h("span", { class: "what", text: s.what })))));
+    return card;
+  }));
+
+  // ---- 용어: 페이지에 자주 나오는 말을 먼저, 나머지는 접어 둔다
+  const pageText = [H.short, ...H.reasons.map((r) => r.title + " " + r.plain), P.oneLine,
+    ...P.rulers.map((r) => [r.title, r.question, r.plain].join(" ")),
+    ...P.workbenches.map((w) => w.plain), ...P.walls.map((w) => w.name + " " + w.analogy),
+    ...P.verdicts.map((v) => v.short + " " + v.robust), P.business.plain, P.seats.plain].join(" ");
+  const countOf = (term) => {
+    const key = term.split(/[ (]/)[0];
+    if (key.length < 2) return 0;
+    let n = 0, i = 0;
+    while ((i = pageText.indexOf(key, i)) !== -1) { n++; i += key.length; }
+    return n;
+  };
+  const gl = P.glossary.map((g, i) => ({ ...g, n: countOf(g.term), i })).sort((a, b) => (b.n - a.n) || (a.i - b.i));
+  const TOP = 16;
+  const gItem = (g) => h("div", {}, h("dt", { text: g.term }), h("dd", { text: g.plain }));
+  $("#gloss").append(...gl.slice(0, TOP).map(gItem));
+  if (gl.length > TOP) {
+    const rest = gl.slice(TOP).sort((a, b) => a.term.localeCompare(b.term, "ko"));
+    $("#gloss-more").hidden = false;
+    $("#gloss-more summary").textContent = `나머지 ${rest.length}개 말 풀이 보기 (가나다순)`;
+    $("#gloss-rest").append(...rest.map(gItem));
+  }
+
+  // ---- 신뢰
+  if (STATS) {
+    const pct = STATS.ratio * 100;
+    $("#flow").append(
+      h("div", { class: "box" }, h("b", { class: "big", text: String(STATS.totalClaims) }), "주장"),
+      h("div", { class: "box" }, h("b", { class: "big", text: "×3" }), "검증자"),
+      h("div", { class: "box" }, h("b", { class: "big", text: String(STATS.rounds.length) }), "라운드")
+    );
+    const r = 68, c = 2 * Math.PI * r;
+    $("#ring").innerHTML = `<svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="${r}" fill="none" stroke="var(--grid)" stroke-width="14"/><circle cx="84" cy="84" r="${r}" fill="none" stroke="var(--${pct >= 90 ? "ok" : "part"})" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(c * pct / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 84 84)"/></svg>`;
+    $("#ring").append(h("div", { class: "c" }, h("b", { class: "big", text: `${fmt(pct)}%` }), h("span", { text: `${STATS.confirmed}/${STATS.totalClaims} 통과` })));
+    $("#ring").setAttribute("role", "img");
+    $("#ring").setAttribute("aria-label", `검증 통과율 ${fmt(pct)}%`);
+    $("#ring-note").textContent = pct >= 90
+      ? `목표 90%를 넘었어요. ${STATS.confirmed}개 주장이 3명 중 2명 이상의 동의를 받았어요. 끝까지 합의되지 않은 ${STATS.totalClaims - STATS.confirmed}개는 숫자로 쓰지 않았어요.`
+      : `목표 90%에 못 미쳤어요 (${STATS.confirmed}/${STATS.totalClaims}). 합의되지 않은 주장은 숫자로 쓰지 않았어요.`;
+    $("#rounds tbody").append(...STATS.rounds.map((rd) => h("tr", {}, h("td", { text: `${rd.round}` }), h("td", { class: "r", text: String(rd.checked) }), h("td", { class: "r", text: String(rd.confirmed) }), h("td", { class: "r", text: String(rd.rejected) }), h("td", { class: "r", text: `${fmt(rd.cumulativeRatio * 100)}%` }))));
+    if (STATS.unconfirmed && STATS.unconfirmed.length) {
+      $("#unconfirmed").append(h("p", { class: "note" }, h("b", { text: `끝까지 합의되지 않은 주장 ${STATS.unconfirmed.length}개: ` }), STATS.unconfirmed.map((u) => `${u.topic} (${u.value}%)`).join(" · "), ". 이 숫자는 페이지에서 쓰지 않았어요."));
+    }
+  }
+  const T = P.trust;
+  $("#tiers").append(...T.tiers.map((t) => {
+    const mid = (t.lo + t.hi) / 2;
+    const row = h("div", { class: "trow", tabindex: "0" },
+      h("div", { text: t.what }),
+      (() => { const tr = h("div", { class: "track" }, h("div", { class: "base" }), h("div", { class: "g50" })); tr.append(h("div", { class: "bar", style: `left:${clamp(t.lo)}%;width:${Math.max(1, clamp(t.hi) - clamp(t.lo))}%;background:var(--${band(mid)})` })); return tr; })(),
+      h("div", { class: "v", text: t.conf })
+    );
+    bindTip(row, t.what, [`확실한 정도 ${t.conf} (${fmt(t.lo)}~${fmt(t.hi)}%)`]);
+    return row;
+  }));
+  $("#tiers").append(h("div", { class: "axis", style: "grid-template-columns:minmax(120px,42%) 1fr 70px" }, h("span"), h("div", { class: "ticks mono" }, h("span", { text: "0" }), h("span", { text: "50" }), h("span", { text: "100%" })), h("span")));
+  $("#trust-plain").textContent = T.plain;
+  $("#trust-plain").after(h("p", { class: "rplain" }, h("b", { text: "분석 전체의 확실한 정도: " }), T.overall));
+  if (CHECK) {
+    const pc = $("#pagecheck");
+    pc.hidden = false;
+    pc.append(h("h3", { style: "margin:0 0 6px;font-size:16px", text: "페이지 숫자 대조" }), h("p", { class: "rplain", text: CHECK.text }));
+  }
+  if (CLAIMS) {
+    $("#claims").append(...CLAIMS.map((c) => h("div", { class: "cl" },
+      h("b", { text: c.headline }), " ",
+      h("div", { class: "m", text: `값 ${c.value} · 범위 ${c.range} · ${confKo(c.confidence)} · 검증자 ${c.agree}/3 동의 · ${c.round}라운드 통과 · ${c.id}` })
+    )));
+    $("#claims-box summary").textContent = `통과한 주장 전체 보기 (${CLAIMS.length}개)`;
+  }
+})();
+</script>

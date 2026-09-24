@@ -1,0 +1,191 @@
+{
+ "history": [
+  {
+   "round": 1,
+   "checkers": [
+    {
+     "checker": "trace",
+     "pass": false,
+     "blocking": 1,
+     "minor": 4,
+     "summary": "Traceability check, round 1: one blocking issue, so the page does not pass yet. I checked the numbers against claims-slim.json and recomputed every piece of arithmetic in python3. All of it is exact: buildAll 350.25–644.5 인월 over 17 workbenches (excluding WSD, native, PLM), which is 5.8375–10.7417 years for 5 people. The recomputed weighted mature score is 59.05 with workbench-map-22's weights, 47.75–69.5 at the range ends, so it stays inside 52–68. Re-multiplying the seat rates gives 41.5 or 43.68. 16.2억/50/5 = 648. 100/540 = 18.5%. 432/6 = 72. Kernel 3,000/10,000 = 30%, 4,000–12,000 인년 left, 800–2,400 years for a 5-person team. Every workbench mature, today and months figure matches its workbench-map claim, including rendering's today 30 from workbench-map-17. Seat shares and rates match usage-and-seats-1..13. Prices, money tiles and business figures match licence-economics-2..12, hundred-percent-13/14 and usage-and-seats-14/15; 13배 and 880석 come from licence-economics-12. The trust stats (29/41/17, 98.9%) match the stats block. The unconfirmed 37% appears only as 미확정. The blocking issue is the Onshape point on the 'whole' ruler: its lo/hi of 10/15 mixes the depth-weighted value with the count-basis value and matches no source range. The minor issues: the 50-seat example sits on the solver point, the seats ruler claims to be 'the smallest of the four' when it is not, a missing '두 사례 기준' qualifier, and verdict 1's robust field leaves out precedent-16's 'most optimistic under 5%'."
+    },
+    {
+     "checker": "consistency",
+     "pass": false,
+     "blocking": 7,
+     "minor": 7,
+     "summary": "Round 1 does not pass: 7 blocking issues, 7 minor. The arithmetic itself is exact: buildAll 350.25/644.5 인월 → 5.8375/10.7417 years; weighted mature score 59.05; range-end recompute 47.75~69.5; seat work share 41.5/43.7; capture 18.5%; seats needed 864/1,234/432; kernel 4,000~12,000 인년 → 800~2,400 years. Prices, seat tiles, trust stats and walls mostly match the claims.\n\nBlocking issues:\n(1)+(2) The piston ruler's 60% point and buildAll.plain explain the 40% vs 60% gap with the 17-workbench total. Only the 10 workbenches that carry weight in the piston score count, and they take 200~370 인월 (3.3~6.2 years for 5 people), which fits inside the '5명 팀 × 4~7년' window. The stated reason is therefore wrong.\n(3) On the whole ruler, the Onshape bar mixes counting methods (hi 15 is a room-count value) and shows a 110-person, 13~14-year company scoring 10% against 35% for a 100-person team, with no explanation.\n(4) On the core ruler, the 85% point sits above the '이론 상한 71.8%' stated on the same ruler, unexplained.\n(5) On the seats ruler, the 50-seat OEM-supplier example (12%) contradicts '원본 납품 협력사 0~5%' and is attached to the wrong point.\n(6) The 20% odds (hundred-percent-14: niche business, 10~25 customers, about 5억 원 a year) is presented as the odds of the 860-seat licence business.\n(7) Topological-naming effort appears as 24~60 in the wall and 24~48 in the Part Design row.\n\nEach issue carries the replacement text."
+    },
+    {
+     "checker": "reader",
+     "pass": false,
+     "blocking": 5,
+     "minor": 9,
+     "summary": "14살 독자와 질문한 피스톤 엔지니어의 눈으로 페이지 데이터를 확인했어요. 숫자 계산은 대부분 맞아요(buildAll 합계 350.25~644.5 인월, 가중 천장 59.05%, 범위 47.75~69.5%). money short 길이, verdict short 형식, 4개 질문에 대한 직접 답도 규칙에 맞아요. 막는 문제는 여섯 개예요. (1) 5.8~10.7년에는 피스톤과 관계없는 작업실이 들어 있어요. 60%를 만드는 작업실만 더하면 200~370 인월(5명이면 3.3~6.2년)이라서, '4~7년이면 모자라서 40%'라는 설명이 숫자와 맞지 않아요. (2) 신뢰 설명에 첫 검사에서 29/88만 통과했다는 점과 검사자가 AI라는 점이 빠져 있어서 믿음을 부풀렸어요. (3) oneLine이 두 문장이고, 좌석 '약 10%'가 과장이에요(해당 시나리오는 0~10%). (4) 50석 예가 솔버 점에 잘못 붙어 있어요. 이 예는 솔버 없이 틀만 쓰는 경우예요. (5) '순절감'이 용어집에 없어요. 나머지는 표현이 어색하거나 설명이 빠진 사소한 문제예요."
+    }
+   ]
+  },
+  {
+   "round": 2,
+   "checkers": [
+    {
+     "checker": "trace",
+     "pass": false,
+     "blocking": 1,
+     "minor": 4,
+     "summary": "I recomputed every piece of arithmetic with python3, and all of it is exact. The weighted mature score with the final ceilings is 59.05 (within 52~68), and taking the range ends gives 47.75~69.5, which matches '약 48~70%'. The build-all sum over 17 workbenches (WSD, native files and PLM excluded) is 350.25~644.5 인월, which is 5.8375~10.7417 years for a team of 5. The 10 workbenches that count for the piston ruler sum to 200~370 인월, 3.33~6.17 years. The five seat-type shares add to 95, and re-multiplying the final per-type rates gives 41.5 (43.68 when divided by 0.95). The other results also check: 432 ÷ 6 = 72 customers, 432 × 200만 = 8.64억, 16.2억 ÷ 50 ÷ 5 = 648만, 50 인년 = 0.33~1% of 5,000~15,000, 800~2,400 years, and 29 + 41 + 17 = 87 claims (98.9%). Every lo/hi matches its source range. Workbench mature, today and weight values match workbench-map-1..20 and -22, and every figure in the price, money and business sections matches licence-economics-2..12, usage-and-seats-14/15 and hundred-percent-13/14. workbench-map-21's 37% appears only as 미확정, and precedent-16's 3~5% is kept in the footnote, not plotted as a point. The page does not pass because of one blocking issue: the Onshape point on the 'whole' ruler labels precedent-4's 10% as Onshape at acquisition (about 7 years, 400~650 인년) and uses that effort to explain why it sits below the 100-person team. precedent-4 actually measures Onshape today, in its 13th~14th year, including 2024~2025 features. The minor issues are: Onshape is wrongly called cheaper than or similar to our price; oneLine says '많아야 10%' while the seats ruler goes up to 30%; the break-even range mixes a 3-person and a 5-person ops team; and the STEP row suggests that colour survives import. Sources: claims-slim.json and claims-full.json in /tmp/claude-0/-home-user-piston-webcad-demo/d3b6b75d-e37c-54cf-808a-4ec885fd80b5/scratchpad/."
+    },
+    {
+     "checker": "consistency",
+     "pass": false,
+     "blocking": 4,
+     "minor": 3,
+     "summary": "Round 2 does not pass: 4 blocking and 3 minor issues. The arithmetic I checked is correct:\n- buildAll sums (350.25~644.5 인월 for 17 workbenches, 5.8375~10.7417 years; 200~370 인월 and 3.3~6.2 years for the 10 piston workbenches; 192~336 인월).\n- The recomputed weighted mature score: 59.05, with range ends of about 48~70.\n- The seat re-multiplication: 41.5~43.7.\n- The kernel numbers: 30% raw, 4,000~12,000 인년, 800~2,400 years.\n- All 20 workbench rows: today ≤ mature, and every value inside its range.\n- prices[], business and the money tiles against the claims.\n- The trust round stats (29/+41/+17).\nThe rulers keep separate denominators and all four are monotone. precedent-16's 3~5% count sits correctly in a footnote.\n\nBlocking:\n1. oneLine says '좌석은 많아야 10%', but the seats ruler shows 15% (5~30%).\n2. The seats-ruler footnote gives the 5-person 4~7-year product 0~10% with no explanation. That scenario is essentially the solver point (15%, 5~30%) and scores below it.\n3. '솔버 통합' is given as 14~30 인월 in verdict 4 and the plan, but as 2~9 in the Sketcher row and the walls.\n4. Onshape's price appears as 200~350만 in the money tile and verdict 2 detail, but as 200~340만 in prices[] and elsewhere in the same verdict."
+    },
+    {
+     "checker": "reader",
+     "pass": false,
+     "blocking": 4,
+     "minor": 5,
+     "summary": "통과 아님: 막는 문제 4개와 작은 문제 5개를 찾았어요. 막는 문제는 다음과 같아요. (1) oneLine의 '좌석 많아야 10%'가 좌석 자(0~30%)와 4번 판정의 '20~30%'와 맞지 않아요. (2) trust.plain이 '실제로 돌려서 잰 값은 약 95%'라고 해서, 한계치(60~75%)와 '안 된다' 판정(75~85%)까지 95%로 믿게 만들어요. (3) buildAll.plain의 '2.5D'와 '조인트'가 glossary에 없어요. (4) business.plain의 '부품 설정기'가 glossary에 없어요. 계산이 필요한 숫자는 다시 계산해 봤고 모두 맞았어요: 인월 합 350.25~644.5와 5.84~10.74년, 피스톤 작업실 10개 200~370 인월, 가중 천장 59.05%, 범위 끝값 47.75~69.5%, 일 몫 41.5~43.7%, 50 인년이 0.3~1%, 432÷6=72곳. 세 가지 질문(얼마나 / 100%? / 라이선스 절감으로 큰 사업?)에는 verdicts가 첫 단어로 바로 답하고, verdict short와 money short 길이 규칙도 지켰어요. '아낀 돈은 고객 것이고 우리 매출은 약 20%'라는 설명도 분명해요."
+    }
+   ]
+  },
+  {
+   "round": 3,
+   "checkers": [
+    {
+     "checker": "trace",
+     "pass": false,
+     "blocking": 1,
+     "minor": 0,
+     "summary": "I checked the page's numbers against the confirmed claims: all rulers, the 20 workbench rows, buildAll, seats, prices, money, business, verdicts, precedents, kernel, daily and trust. Only one blocking problem is left: money[10] compares two different break-even quantities in its '13배' sentence.\n\nArithmetic recomputed with python3, all correct:\n- Weighted mature score: 59.05. The weights sum to 100. The range-end recompute gives 47.75–69.5, which the page shows as about 48–70.\n- Person-months over 17 workbenches (WSD, native files and PLM excluded): 350.25–644.5, which is 5.8375–10.7417 years for a 5-person team.\n- The 10 workbenches that count toward the piston score: 200–370 person-months, which is 3.33–6.17 years.\n- Effective development time: 16–28 person-years = 192–336 person-months.\n- Other checks: 55–60% × 5/100 ≈ 3%; 4,000–12,000 ÷ 5 = 800–2,400; re-multiplying the final per-type rates gives 41.5% (unclassified 5% set to 0) and 43.7% (divided by 95%); 6/50 = 12%, 4/50 = 8%, 9/50 = 18%; 432 ÷ 6 = 72 and 432 × 200만 = 8.64억; 100/540 = 18.5%; 16.2억 ÷ 50 ÷ 5 ≈ 650.\n\nSources confirmed:\n- Ranges and lo/hi values match hundred-percent-2, -3, -12, precedent-4 and -14, licence-economics-2, -3, -5, -9 and -11, and usage-and-seats-1–13.\n- Supporting details were found in the evidence text, including 71.8%, 326만, 16 GB, 14.5 ms, 18.7배, 2,000만–4,500만 triangles, 0.1–0.5 s, 2–10 인년 PDM, 4–5 years + 1–2 years, and the GM/Ford/Mercedes/Hyundai-Kia NX split.\n\nThe piston ruler has no 'today' point, and precedent-16's 3–5% is kept in the footnote, as the rules require. The unconfirmed workbench-map-21 value (37%) is mentioned only as 미확정. The trust stats (88 claims, 87 confirmed = 98.9%, rounds 29 / +41 / +17) match claims-full.json."
+    },
+    {
+     "checker": "consistency",
+     "pass": false,
+     "blocking": 1,
+     "minor": 2,
+     "summary": "Round 3 does not pass. I found one blocking issue and two minor ones.\n\n**Blocking:** the one-line answer (`oneLine`) and the seats ruler (`rulers[3]`) give different seat numbers for the same thing.\n- `oneLine` puts '약 10~15%' of seats right after the 5-person, 4~7-year results, so it reads as that team's number.\n- The ruler's 5-person point says 0~10%, and its footnote calls 5~10% the safest value.\n\n**What I checked and found consistent:**\n- **Totals:** the 20 workbench weights add up to 100.\n- **Weighted score:** recomputing with the final mature scores gives 59.05. That is inside 52~68, so the point is correctly shown as about 60 with lo 52, hi 68. Using each range's ends gives 47.75~69.5, which matches the footnote's '약 48~70%'.\n- **Person-months:** without WSD, native files and PLM, the sum is 350.25~644.5 인월 (5.8375~10.7417 years for 5 people, 17 workbenches). The 10 piston-weighted workbenches add up to 200~370 인월 (3.33~6.17 years).\n- **Seat shares:** the five shares add up to 95. Re-multiplying the final per-type rates gives 41.5 / 43.68, matching '약 42~44%'. 6/50 = 12% and 4~9 of 50 = 8~18%.\n- **Money and business:** 100/540 = 18.5%, 432÷6 = 72 companies, and 8.64억 ÷ 200만 = 432 seats all check out. The 650만 mid for CATIA V5 perpetual comes from 16.2억/50/5, which is in licence-economics-4. The '13배' comes from licence-economics-12 itself.\n- **Kernel:** 4,000~12,000 인년 and 800~2,400 years both check out.\n- **Trust:** the round counts 29 / 41 / 17 match the stats.\n- **Workbench rows:** every today value is at or below mature and inside its range.\n- **Other numbers:** prices, verdicts, walls and precedents match their claims. The unconfirmed 37% appears only marked '미확정'."
+    },
+    {
+     "checker": "reader",
+     "pass": false,
+     "blocking": 2,
+     "minor": 3,
+     "summary": "Round 3 reader check: I found 2 blocking issues and 3 minor ones. What I verified: the arithmetic is exact (buildAll 350.25~644.5 인월 → 5.84~10.74년; the 10-workbench subset 200~370 인월; weightedMature 59.05; the footnote range 47.75~69.5 ≈ 48~70; workShare 41.5/43.7; kernel 800~2,400년; 432÷6=72). All money shorts are 16 characters or fewer. All four verdict shorts are at most 2 sentences and start with the answer. The trust plain matches the round stats (88 → 29, 59 re-checked → 41, 18 re-checked → 17). I found no unglossed jargon in any plain, short, title, question or analogy field. Blocking: (1) oneLine says 약 10~15% of seats can be cut, next to the 5-person 4-7-year scenario, while that scenario's claim says 0~10% and the page's own safest value is 5~10%. (2) business.plain pins the niche-path runway (6억~23억 원) to the seat-selling model, whose development cost alone is 약 10.8억 원. Minor: the seats ruler labels read as a timeline; the piston 60% note reads as near-term without saying which number to use; one money tile label says 'actually saved' but shows the gross figure."
+    }
+   ]
+  },
+  {
+   "round": 4,
+   "checkers": [
+    {
+     "checker": "trace",
+     "pass": true,
+     "blocking": 0,
+     "minor": 2,
+     "summary": "I checked every number and factual statement against the 87 confirmed claims in claims-slim.json, and redid the arithmetic in python3. I found no blocking issues.\n\n**Recomputed and correct:**\n- **Weighted mature score:** workbench-map-22's weights with the final mature scores give 59.05. That is inside 52-68, so the point is shown as about 60 (52-68). Using the ends of each workbench range gives 47.75-69.5, which the footnote correctly shows as '약 48~70%'.\n- **buildAll:** 17 workbenches (WSD left out because it is shared with GSD, and native files and PLM counted as 0) add up to 350.25-644.5 인월. For a 5-person team that is 5.8375-10.7417 years.\n- **Piston-score subset:** the 10 workbenches that count toward the piston score add up to 200-370 인월, or 3.33-6.17 years for 5 people.\n- **Development time:** 16-28 인년 = 192-336 인월.\n- **Seat work share:** re-multiplying the final per-type rates gives 41.5% (4150/100), or 43.68% when the unclassified 5% is left out. The original 49.3% came from the first rates, as the claim says.\n- **Seats:** 6/50 = 12%, and the 4-9 range is 8-18%.\n- **Money:**\n  - 16.2억 / 50 seats / 5 years = 648만, shown as about 650.\n  - 100/540 = 18.5%.\n  - 1080/200 = 5.4.\n  - 50 인년 is 0.33-1% of 5,000-15,000 인년.\n  - The best-case robust check is right: 20 seats x 30% = 6 seats per company, 432/6 = 72 companies, and 432 x 200만 = 8.64억.\n\n**Matched their sources:** all 20 workbench rows (mature value and range, today values only where a claim gives one, weights, 인월) and the four rulers, with lo/hi matching their source ranges. Also all price rows, money tiles, business figures, seat groups, walls, precedents (dates, headcounts, 인년, deal values), verdicts and trust tiers, and the stats line (29 / +41 / +17 = 87 of 88 = 98.9%).\n\n**Rule checks:**\n- workbench-map-21's 37% appears only as '미확정'.\n- precedent-16's 3-5% is kept off the 'whole' ruler and explained in the footnote.\n- The piston ruler has no 'today' point.\n- workbench-map-22's 61% is marked as recomputed.\n\nOnly two minor issues remain: an unlabelled 인년→인월 conversion in the PLM row, and a template-payback tile that leaves out the productization cost the claim names."
+    },
+    {
+     "checker": "consistency",
+     "pass": false,
+     "blocking": 1,
+     "minor": 2,
+     "summary": "Round-4 check: the page fails on 1 blocking issue. What checks out: buildAll sums (17 workbenches 350.25~644.5 person-months, 5.8375~10.7417 years; 10 piston workbenches 200~370 person-months, about 3.3~6.2 years). The recomputed weighted mature of 59.05 is correct, and the end-value recompute of 47.75~69.5 matches '약 48~70%'. Every workbench today value is at or below its mature value, and all values sit inside their ranges. Seat shares sum to 95, and the per-type rates re-multiply to 41.5~43.7. Prices, money tiles and business figures match their claims (8.64 = 864 seats × 100만; 1,080/200 = 5.4배; 432/6 = 72곳). The trust round stats (29/+41/+17 = 87/88) match the file. The unconfirmed 37% appears only as '미확정'. The whole ruler keeps precedent-16's 3~5% out of the points. The blocking issue: verdict 2's 'robust' uses 9,000만 원 as the best-case saving, but that figure is for 4~6 seats. Elsewhere the page shows the seat range as 4~9 seats, so the stated optimistic end is not the page's own range end. The exact Korean replacement texts are given in the fix. Two minor clarity issues: the core ruler's 100-person point uses a different denominator, and '약 12%' in seats.plain is easy to confuse with '약 12석'."
+    },
+    {
+     "checker": "reader",
+     "pass": false,
+     "blocking": 2,
+     "minor": 3,
+     "summary": "Round 4 reader check. The arithmetic holds: buildAll comes to 350.25~644.5 인월, which is 5.84~10.74 years. The 10 piston-related workbenches come to 200~370 인월. The weighted mature score recomputes to 59.05 and its range to 47.75~69.5. Each verdict 'short' is 2 sentences or fewer. Each money 'short' is 16 characters or fewer. The trust 'plain' matches the claims-full stats: rounds of 29/41/17, with round 2 re-checking the 59 claims rejected in round 1. The glossary is nearly complete. Two blocking issues remain, both from the same cause. oneLine says the seats a 5-person-team product could remove are '약 5~10% (가장 안전한 값)'. The seats ruler puts the hundred-percent-2 point at 5. But hundred-percent-2 says '0에 가까움 (0~10)'. For a supplier that must deliver native CATIA files to an OEM, licence-economics-9 gives 0~5%. So the page overstates the seat floor to exactly this reader. Three minor wording fixes are also listed."
+    }
+   ]
+  }
+ ],
+ "lastChecks": [
+  {
+   "pass": true,
+   "issues": [
+    {
+     "path": "workbenches[19].months",
+     "problem": "The text '서버를 붙이면 기본 PDM 은 약 2~10 인년(24~120 인월)' turns hundred-percent-9's 2-10 인년 into 24-120 인월 (x12). The page does not say this is a calculation. Every other converted figure on the page is labelled.",
+     "fix": "Replace with: '이 구조로는 불가. 서버를 붙이면 기본 PDM 은 약 2~10 인년(24~120 인월로 바꿔 셈, 확인된 숫자로 한 계산)'",
+     "severity": "minor"
+    },
+    {
+     "path": "money[7].plain",
+     "problem": "usage-and-seats-15 says the central case cannot pay back once two costs are added: productization (12-36 인월) and maintenance (15-20% a year). The tile names only maintenance. The conclusion still holds, because maintenance alone (4,050만-5,400만 a year) is at least the central saving, but the tile leaves out the first cost the claim gives.",
+     "fix": "Replace the last sentence with: '한 회사의 절감으로 갚으면 가운데 경우 6~7년이 걸리고, 제품으로 다듬는 비용과 매년 드는 유지비(연 15~20%)까지 넣으면 못 갚아요.'",
+     "severity": "minor"
+    }
+   ],
+   "summary": "I checked every number and factual statement against the 87 confirmed claims in claims-slim.json, and redid the arithmetic in python3. I found no blocking issues.\n\n**Recomputed and correct:**\n- **Weighted mature score:** workbench-map-22's weights with the final mature scores give 59.05. That is inside 52-68, so the point is shown as about 60 (52-68). Using the ends of each workbench range gives 47.75-69.5, which the footnote correctly shows as '약 48~70%'.\n- **buildAll:** 17 workbenches (WSD left out because it is shared with GSD, and native files and PLM counted as 0) add up to 350.25-644.5 인월. For a 5-person team that is 5.8375-10.7417 years.\n- **Piston-score subset:** the 10 workbenches that count toward the piston score add up to 200-370 인월, or 3.33-6.17 years for 5 people.\n- **Development time:** 16-28 인년 = 192-336 인월.\n- **Seat work share:** re-multiplying the final per-type rates gives 41.5% (4150/100), or 43.68% when the unclassified 5% is left out. The original 49.3% came from the first rates, as the claim says.\n- **Seats:** 6/50 = 12%, and the 4-9 range is 8-18%.\n- **Money:**\n  - 16.2억 / 50 seats / 5 years = 648만, shown as about 650.\n  - 100/540 = 18.5%.\n  - 1080/200 = 5.4.\n  - 50 인년 is 0.33-1% of 5,000-15,000 인년.\n  - The best-case robust check is right: 20 seats x 30% = 6 seats per company, 432/6 = 72 companies, and 432 x 200만 = 8.64억.\n\n**Matched their sources:** all 20 workbench rows (mature value and range, today values only where a claim gives one, weights, 인월) and the four rulers, with lo/hi matching their source ranges. Also all price rows, money tiles, business figures, seat groups, walls, precedents (dates, headcounts, 인년, deal values), verdicts and trust tiers, and the stats line (29 / +41 / +17 = 87 of 88 = 98.9%).\n\n**Rule checks:**\n- workbench-map-21's 37% appears only as '미확정'.\n- precedent-16's 3-5% is kept off the 'whole' ruler and explained in the footnote.\n- The piston ruler has no 'today' point.\n- workbench-map-22's 61% is marked as recomputed.\n\nOnly two minor issues remain: an unlabelled 인년→인월 conversion in the PLM row, and a template-payback tile that leaves out the productization cost the claim names.",
+   "checker": "trace"
+  },
+  {
+   "pass": false,
+   "issues": [
+    {
+     "path": "verdicts[1].robust",
+     "problem": "The optimistic-end claim does not use the range end shown on the page. The 'robust' text says the 50-seat company saves at most 연 9,000만 원 (net at most 약 8,400만 원). That figure comes from usage-and-seats-14, which is calculated for cancelling 4~6 seats. The page's own seat range (seats.afterOem, rulers[3] note, verdicts[1].detail) goes up to 9 seats. verdicts[1].detail puts '약 6석(4~9석)' directly beside '1,200만~9,000만 원', so readers take 9,000만 as the 9-seat best case, and it is not. The same basis gap is in money[4].plain, which says '4~6석' while every other place on the page says 4~9석.",
+     "fix": "(1) verdicts[1].robust: replace '50석 회사의 최대 절감 연 9,000만 원도 웹 CAD 값을 빼면 순절감은 최대 약 8,400만 원이에요.' with '50석 회사의 최대 절감 연 9,000만 원은 6석을 없앴을 때 값이에요. 좌석 범위 끝인 9석까지 없애도 9,000만 × 9/6 ≈ 연 약 1.35억 원이에요(확인된 숫자로 한 계산). 50석이 CATIA에 1년에 내는 돈(5년 약 16억 원 ÷ 5 ≈ 연 약 3.2억 원)의 절반이 안 돼요.' (2) verdicts[1].detail: replace '50석 협력사에서 실제로 없앨 좌석은 약 6석(4~9석), 연간 총 절감은 약 4,000만 원(1,200만~9,000만 원)이고, 웹 CAD 값을 빼면 순절감은 0 안팎이에요.' with '50석 협력사에서 실제로 없앨 좌석은 약 6석(4~9석)이에요. 4~6석을 없앴을 때 연간 총 절감은 약 4,000만 원(1,200만~9,000만 원)이고, 웹 CAD 값을 빼면 순절감은 0 안팎이에요.' (3) money[4].plain: after '4~6석을 없앴을 때예요.' add '(없앨 수 있는 좌석 범위는 4~9석이지만, 이 절감 계산은 4~6석 기준이에요.)'",
+     "severity": "blocking"
+    },
+    {
+     "path": "rulers[1].points[2].who",
+     "problem": "The 100-person team's 85% (hundred-percent-3) is measured on 'core workbenches including Assembly and basic surfaces'. The other points on this ruler are measured on the 117-feature list, which leaves out Assembly and surfaces. The note explains this, but the point label does not, so readers compare 57.5 with 85 on different denominators. The like-for-like 5-person figure is 50~55.",
+     "fix": "Change who to '100명 팀 × 10~15년 (조립·기본 곡면 포함 기준)' so the different basis shows on the ruler itself.",
+     "severity": "minor"
+    },
+    {
+     "path": "seats.plain",
+     "problem": "'좌석을 없애는 비율(약 12%)' sits right next to wholeSeats '약 12석' (which is 24% of 50). A 14-year-old can easily read these as the same number, when 12% is actually afterOem (6 of 50).",
+     "fix": "Replace '좌석을 없애는 비율(약 12%)' with '실제로 없앨 좌석(50석 중 약 6석, 약 12%)'.",
+     "severity": "minor"
+    }
+   ],
+   "summary": "Round-4 check: the page fails on 1 blocking issue. What checks out: buildAll sums (17 workbenches 350.25~644.5 person-months, 5.8375~10.7417 years; 10 piston workbenches 200~370 person-months, about 3.3~6.2 years). The recomputed weighted mature of 59.05 is correct, and the end-value recompute of 47.75~69.5 matches '약 48~70%'. Every workbench today value is at or below its mature value, and all values sit inside their ranges. Seat shares sum to 95, and the per-type rates re-multiply to 41.5~43.7. Prices, money tiles and business figures match their claims (8.64 = 864 seats × 100만; 1,080/200 = 5.4배; 432/6 = 72곳). The trust round stats (29/+41/+17 = 87/88) match the file. The unconfirmed 37% appears only as '미확정'. The whole ruler keeps precedent-16's 3~5% out of the points. The blocking issue: verdict 2's 'robust' uses 9,000만 원 as the best-case saving, but that figure is for 4~6 seats. Elsewhere the page shows the seat range as 4~9 seats, so the stated optimistic end is not the page's own range end. The exact Korean replacement texts are given in the fix. Two minor clarity issues: the core ruler's 100-person point uses a different denominator, and '약 12%' in seats.plain is easy to confuse with '약 12석'.",
+   "checker": "consistency"
+  },
+  {
+   "pass": false,
+   "issues": [
+    {
+     "path": "oneLine",
+     "problem": "'없앨 수 있는 좌석은 약 5~10%(두 검토가 겹치는 가장 안전한 값…)'는 오해를 불러요. 이 문장이 말하는 '그 제품'(5명 × 4~7년)에 대해 hundred-percent-2가 내놓은 값은 '0에 가까움(0~10%)'이에요. '가장 안전한'이라는 말은 5%가 바닥이라는 뜻으로 읽혀요. 신뢰도 절에서 좌석 추정은 40~70%라고 했으니, 그렇게 확실하다고 말할 근거가 없어요. 또 이 질문을 한 사람은 피스톤 협력사 엔지니어예요. 그런데 OEM에 CATIA 원본을 납품해야 하는 협력사 기준(0~5%, licence-economics-9)이 빠져 있어요.",
+     "fix": "해당 부분을 이렇게 바꾸세요: \"그 제품으로 실제로 없앨 수 있는 좌석은 0~10%로, 0에 가까워요(가장 낙관적인 검토도 최대 30%). OEM에 CATIA 원본을 내야 하는 협력사라면 0~5%예요.\" 뒤 문장은 그대로 두세요: \"고객이 아낀 돈의 약 20%만 우리 매출이 되니 '라이선스 절감'만으로는 큰 사업이 되기 어려워요.\" claimIds 쪽에는 hundred-percent-2와 licence-economics-9가 이미 좌석 자에 들어 있어요.",
+     "severity": "blocking"
+    },
+    {
+     "path": "rulers[3].points[1]",
+     "problem": "'5명 팀 × 4~7년 (가장 조심스러운 검토)' 점이 value 5에 찍혀 있고, note에 '점은 가운데 5에 찍었어요'라고 적혀 있어요. 하지만 이 점의 근거인 hundred-percent-2의 값은 '반납 가능 좌석 0에 가까움'(범위 0~10)이에요. 그런데 같은 자의 footnote는 '두 검토의 범위가 겹치는 5~10%가 가장 안전한 값'이라고 해요. 조심스러운 검토가 말한 0 근처를 없애고 5%를 바닥처럼 보이게 해요.",
+     "fix": "value를 0으로, label을 \"0~10% (0에 가까움)\"으로 바꾸세요. note의 괄호 '(점은 가운데 5에 찍었어요)'는 '(이 검토의 가운데 값은 0에 가까워요)'로 바꾸세요. rulers[3].footnote의 문장 \"두 검토의 범위가 겹치는 5~10%가 가장 안전한 값이에요.\"는 \"두 검토 모두 '좌석은 많이 못 없앤다'는 데는 같아요. 조심스러운 검토는 0 근처, 낙관적인 검토는 5~30%로 봤어요. OEM에 CATIA 원본을 내야 하는 협력사라면 0~5%예요.\"로 바꾸세요.",
+     "severity": "blocking"
+    },
+    {
+     "path": "kernel.plain",
+     "problem": "'CATIA의 CAD 엔진보다 약해서 곡면끼리 둥글게 잇는 필렛이 실패해요'는 모든 필렛이 실패한다는 뜻으로 읽혀요. 실제로는 피스톤 같은 각진 부품의 필렛은 성공했어요(hundred-percent-10, walls[3] 18번 중 14번 성공). 피스톤 엔지니어는 이 문장을 과장으로 받아들일 거예요.",
+     "fix": "\"첫째, CATIA의 CAD 엔진보다 약해서, 비틀린 곡면끼리 둥글게 잇는 필렛이 자주 실패해요(피스톤처럼 각진 부품의 필렛은 대부분 돼요).\"",
+     "severity": "minor"
+    },
+    {
+     "path": "money[3].plain",
+     "problem": "'상용 브라우저 CAD'의 '상용'은 14살에게 낯선 말인데 용어집에 없어요. 'plain' 필드라서 쉬운 말이 필요해요.",
+     "fix": "'Onshape 같은 상용 브라우저 CAD 값'을 'Onshape처럼 돈을 받고 파는 브라우저 CAD 값'으로 바꾸세요.",
+     "severity": "minor"
+    },
+    {
+     "path": "trust.tiers[0].what",
+     "problem": "'리포'는 개발자 용어라서 14살 독자는 뜻을 몰라요. 용어집에도 없어요.",
+     "fix": "\"이 데모의 자동 테스트로 확인한 사실 (44개 모두 통과)\"",
+     "severity": "minor"
+    }
+   ],
+   "summary": "Round 4 reader check. The arithmetic holds: buildAll comes to 350.25~644.5 인월, which is 5.84~10.74 years. The 10 piston-related workbenches come to 200~370 인월. The weighted mature score recomputes to 59.05 and its range to 47.75~69.5. Each verdict 'short' is 2 sentences or fewer. Each money 'short' is 16 characters or fewer. The trust 'plain' matches the claims-full stats: rounds of 29/41/17, with round 2 re-checking the 59 claims rejected in round 1. The glossary is nearly complete. Two blocking issues remain, both from the same cause. oneLine says the seats a 5-person-team product could remove are '약 5~10% (가장 안전한 값)'. The seats ruler puts the hundred-percent-2 point at 5. But hundred-percent-2 says '0에 가까움 (0~10)'. For a supplier that must deliver native CATIA files to an OEM, licence-economics-9 gives 0~5%. So the page overstates the seat floor to exactly this reader. Three minor wording fixes are also listed.",
+   "checker": "reader"
+  }
+ ]
+}
